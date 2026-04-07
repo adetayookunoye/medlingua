@@ -1,0 +1,25 @@
+# MedLingua Fine-Tuning Requirements
+# Install: pip install -r training/requirements.txt
+#
+# GPU requirement: NVIDIA GPU with >=16GB VRAM
+# Recommended: A100 (80GB), RTX 4090, T4 (16GB for E2B)
+# Free GPU: Google Colab (T4), Kaggle (P100/T4×2)
+
+# Unsloth — 2x faster fine-tuning, 60% less VRAM
+unsloth[colab-new] >= 2024.12
+
+# Core training
+torch >= 2.1.0
+transformers >= 4.46.0
+trl >= 0.12.0
+peft >= 0.13.0
+accelerate >= 0.34.0
+bitsandbytes >= 0.44.0
+
+# Dataset handling
+datasets >= 3.0.0
+huggingface_hub >= 0.26.0
+
+# Utilities
+sentencepiece >= 0.2.0
+protobuf >= 4.25.0
