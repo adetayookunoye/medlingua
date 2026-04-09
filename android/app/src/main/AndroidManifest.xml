@@ -1,4 +1,24 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Microphone for voice input (speech-to-text) -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+
+    <!-- Camera for wound/skin condition photos -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+
+    <!-- Network for model download from HuggingFace -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- Storage for model files and encounter database -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"/>
+
+    <!-- Camera hardware feature (optional — app works without it) -->
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+    <uses-feature android:name="android.hardware.microphone" android:required="false"/>
+
     <application
         android:label="medlingua"
         android:name="${applicationName}"
