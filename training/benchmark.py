@@ -274,10 +274,13 @@ def main():
             },
         ]
 
-        prompt = tokenizer.apply_chat_template(
+        # tokenizer from FastModel is a Gemma4Processor (multimodal);
+        # use its inner tokenizer for text-only inference
+        text_tokenizer = getattr(tokenizer, "tokenizer", tokenizer)
+        prompt = text_tokenizer.apply_chat_template(
             prompt_messages, tokenize=False, add_generation_prompt=True
         )
-        inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+        inputs = text_tokenizer(prompt, return_tensors="pt").to(model.device)
 
         start = time.time()
         with __import__("torch").no_grad():
@@ -291,7 +294,7 @@ def main():
         latency = time.time() - start
         total_latency += latency
 
-        response_text = tokenizer.decode(outputs[0][inputs["input_ids"].shape[-1]:], skip_special_tokens=True)
+        response_text = text_tokenizer.decode(outputs[0][inputs["input_ids"].shape[-1]:], skip_special_tokens=True)
         parsed = parse_triage_response(response_text)
         scores = evaluate_response(parsed, tc)
         scores["latency_seconds"] = latency

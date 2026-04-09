@@ -46,21 +46,28 @@ We fine-tune Gemma 4 E4B using Unsloth's 4-bit QLoRA implementation. The trainin
 3. **MedMCQA** — Medical multiple-choice QA from AIIMS/NEET exams, providing broad medical knowledge grounding.
 4. **HealthCareMagic** — Real doctor-patient dialogues teaching conversational medical reasoning.
 
-The fine-tuning applies LoRA adapters to all attention projections (q, k, v, o) and MLP layers (gate, up, down), using rank 16 with alpha 16. We train with SFTTrainer using chat template formatting and sequence packing for efficiency.
+The fine-tuning applies LoRA adapters to all attention projections (q, k, v, o) and MLP layers (gate, up, down), using rank 32 with alpha 64. We train with SFTTrainer using chat template formatting and sequence packing for efficiency. Of the model's 6.3B total parameters, only 84.8M (1.34%) are trainable through LoRA, keeping the fine-tuning efficient.
 
-Training runs on the University of Georgia's Sapelo2 HPC cluster using NVIDIA A100-SXM4-80GB GPUs. The exported model is quantized to GGUF format for mobile deployment.
+Training runs on the University of Georgia's Sapelo2 HPC cluster using NVIDIA A100-SXM4-80GB GPUs with Unsloth's 4-bit QLoRA implementation. Training completed 1,902 steps across 3 epochs in 43 minutes, achieving a final training loss of 1.362 (down from 11.76 at start). The fine-tuned LoRA adapter (324MB) is deployed alongside the base model for on-device inference.
 
 ## Benchmarking
 
-Our evaluation suite tests the fine-tuned model against 18 medical triage scenarios covering:
+Our evaluation suite tests the fine-tuned model against 18 medical triage scenarios covering emergency, urgent, standard, and routine severity levels across 11 clinical categories, including 3 multilingual cases (French, Spanish, Swahili).
 
-- **Severity classification**: Accuracy across emergency, urgent, standard, and routine categories
-- **JSON compliance**: Whether the model produces valid structured function-call responses
-- **IMCI keyword adherence**: Presence of protocol-appropriate medical terminology
-- **Multilingual performance**: Test cases in French, Spanish, and Swahili
-- **Per-category breakdown**: Performance across respiratory, GI, neurological, maternal, dermatology, and other clinical categories
+**Results:**
 
-The benchmark produces a confusion matrix across severity levels and per-category accuracy scores, providing transparent metrics alongside published model weights.
+| Metric | Score |
+|---|---|
+| Severity Classification Accuracy | 61.1% |
+| JSON Compliance Rate | 77.8% |
+| IMCI Keyword Adherence | 63.4% |
+| Recommendation Rate | 77.8% |
+| Danger Signs Detection | 77.8% |
+| Avg Inference Latency (A100) | 35.3s |
+
+**Critical safety finding**: The model achieves **100% accuracy on emergency cases** (7/7 correct). All misclassifications are false positives — the model over-triages (e.g., classifying "routine" as "standard" or "urgent") rather than under-triaging. This is the safer failure mode in medical triage, ensuring no emergency is missed.
+
+**Per-category highlights**: 100% accuracy on critical illness, dehydration, neurological, maternal, and infectious disease categories. Multilingual performance at 67% accuracy with strong emergency detection in French and Spanish.
 
 ## Language Support
 
@@ -95,7 +102,7 @@ MedLingua addresses UN Sustainable Development Goal 3 (Good Health and Well-Bein
 
 ## Links
 
-- **GitHub**: [Repository URL]
+- **GitHub**: https://github.com/adetayookunoye/medlingua
 - **Demo Video**: [Video URL]
 - **Model Weights**: [HuggingFace URL]
 - **Benchmark Results**: See `training/output/benchmark_results.json`
