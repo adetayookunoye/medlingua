@@ -57,6 +57,10 @@ def main():
         help="Export only the LoRA adapter file (no merge)"
     )
     parser.add_argument(
+        "--skip-gguf", action="store_true",
+        help="Skip GGUF export (requires llama.cpp build tools)"
+    )
+    parser.add_argument(
         "--push-to-hub", type=str, default=None,
         help="Push merged model to HuggingFace Hub"
     )
@@ -143,9 +147,6 @@ def _export_merged(args):
         load_in_4bit=True,
     )
 
-    # Step 2: Save merged model in GGUF format (compatible with MediaPipe)
-    print("[2/4] Merging and quantizing...")
-
     quant_method_map = {
         "int4": "q4_k_m",
         "int8": "q8_0",
@@ -154,30 +155,35 @@ def _export_merged(args):
     }
     quant_method = quant_method_map[args.quantize]
 
-    merged_dir = os.path.join(args.output_dir, "merged")
-    os.makedirs(merged_dir, exist_ok=True)
+    gguf_files = []
 
-    # Unsloth can save directly to GGUF
-    print(f"  Saving as GGUF ({quant_method})...")
-    model.save_pretrained_gguf(
-        merged_dir,
-        tokenizer,
-        quantization_method=quant_method,
-    )
+    # Step 2: Save merged model in GGUF format (requires llama.cpp build tools)
+    if not args.skip_gguf:
+        print("[2/4] Merging and quantizing to GGUF...")
+        merged_dir = os.path.join(args.output_dir, "merged")
+        os.makedirs(merged_dir, exist_ok=True)
 
-    # Find the generated GGUF file
-    gguf_files = list(Path(merged_dir).glob("*.gguf"))
-    if gguf_files:
-        gguf_path = gguf_files[0]
-        size_mb = gguf_path.stat().st_size / (1024 * 1024)
-        print(f"  GGUF model: {gguf_path.name} ({size_mb:.0f} MB)")
+        print(f"  Saving as GGUF ({quant_method})...")
+        model.save_pretrained_gguf(
+            merged_dir,
+            tokenizer,
+            quantization_method=quant_method,
+        )
+
+        gguf_files = list(Path(merged_dir).glob("*.gguf"))
+        if gguf_files:
+            gguf_path = gguf_files[0]
+            size_mb = gguf_path.stat().st_size / (1024 * 1024)
+            print(f"  GGUF model: {gguf_path.name} ({size_mb:.0f} MB)")
+        else:
+            print("  WARNING: No GGUF file generated")
     else:
-        print("  WARNING: No GGUF file generated")
+        print("[2/4] Skipping GGUF export (--skip-gguf)")
 
-    # Step 3: Also save in safetensors for HF compatibility
+    # Step 3: Save in safetensors for HF compatibility
     print("[3/4] Saving HuggingFace format...")
     hf_dir = os.path.join(args.output_dir, "hf")
-    model.save_pretrained_merged(hf_dir, tokenizer, save_method="merged_16bit")
+    model.save_pretrained_merged(hf_dir, tokenizer, save_method="forced_merged_4bit")
     print(f"  HuggingFace model saved to {hf_dir}")
 
     # Step 4: Generate deployment instructions
@@ -211,7 +217,7 @@ def _export_merged(args):
         print(f"\n  Pushing to Hub: {args.push_to_hub}")
         model.push_to_hub_merged(
             args.push_to_hub, tokenizer,
-            save_method="merged_16bit",
+            save_method="forced_merged_4bit",
         )
         # Also push GGUF
         if gguf_files:
@@ -223,7 +229,8 @@ def _export_merged(args):
 
     print("\n" + "=" * 60)
     print("Export complete!")
-    print(f"  GGUF model:  {merged_dir}/")
+    if not args.skip_gguf:
+        print(f"  GGUF model:  {merged_dir}/")
     print(f"  HF model:    {hf_dir}/")
     print(f"  Deploy info: {info_path}")
     print("\nNext steps:")

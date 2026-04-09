@@ -43,7 +43,8 @@ echo "=========================================="
 
 # ---- Paths -------------------------------------------------------------------
 PROJECT_DIR="${SLURM_SUBMIT_DIR:-$HOME/Gemma4}"
-VENV_DIR="$PROJECT_DIR/training/.venv"
+# Use compute-node local storage for venv (avoids NFS .nfs lock files and is faster)
+VENV_DIR="${TMPDIR:-/tmp}/medlingua-venv"
 LOG_DIR="$PROJECT_DIR/training/logs"
 
 cd "$PROJECT_DIR"
@@ -53,21 +54,19 @@ mkdir -p "$LOG_DIR"
 module purge
 module load Python/3.11.5-GCCcore-13.2.0
 module load CUDA/12.1.1
+module load CMake/3.27.6-GCCcore-13.2.0
+module load cURL/8.3.0-GCCcore-13.2.0
 
 echo "Python: $(python3 --version)"
 echo "CUDA:   $(nvcc --version | grep 'release' || echo 'loaded via module')"
 nvidia-smi
 
 # ---- Set up virtual environment ----------------------------------------------
-# Use --clear to force a clean venv (avoids NFS rm -rf issues)
-if [ ! -f "$VENV_DIR/bin/activate" ]; then
-    echo ""
-    echo "[1/5] Creating virtual environment..."
-    python3 -m venv --clear "$VENV_DIR"
-else
-    echo ""
-    echo "[1/5] Reusing existing virtual environment..."
-fi
+echo ""
+echo "[1/5] Creating virtual environment..."
+# Fresh venv on local SSD — clean every time, no NFS issues
+rm -rf "$VENV_DIR" 2>/dev/null || true
+python3 -m venv "$VENV_DIR"
 
 source "$VENV_DIR/bin/activate"
 echo "Using Python: $(which python)"
@@ -75,20 +74,17 @@ echo "Using Python: $(which python)"
 # ---- Install dependencies ----------------------------------------------------
 echo ""
 echo "[2/5] Installing dependencies..."
-pip install --upgrade pip --quiet
+python -m pip install --upgrade pip --quiet
 
-# Install PyTorch 2.5.1 + torchvision for CUDA 12.1
-# Required by unsloth 2026.x which uses torch._inductor.config
-pip install "torch==2.5.1" "torchvision==0.20.1" --index-url https://download.pytorch.org/whl/cu121 --quiet
-
-# Fix CUDA library version mismatch (cusparse needs matching nvjitlink)
-pip install nvidia-nvjitlink-cu12 --upgrade --quiet
-
-# Install Unsloth and training deps
-pip install "unsloth[cu121-torch250]" --quiet
-pip install datasets huggingface_hub sentencepiece protobuf --quiet
+# Install Unsloth (pulls its own torch + matching nvidia CUDA libs)
+# Do NOT override torch version — unsloth's torch matches its nvidia packages.
+# The driver (570.x, CUDA 12.8) supports whatever CUDA version unsloth ships.
+python -m pip install unsloth --quiet
+python -m pip install datasets huggingface_hub sentencepiece protobuf --quiet
 
 echo "Packages installed."
+echo "  torch: $(python -c 'import torch; print(torch.__version__)' 2>/dev/null)"
+echo "  CUDA available: $(python -c 'import torch; print(torch.cuda.is_available())' 2>/dev/null)"
 
 # ---- Prepare dataset ---------------------------------------------------------
 echo ""
