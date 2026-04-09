@@ -104,5 +104,5 @@ MedLingua addresses UN Sustainable Development Goal 3 (Good Health and Well-Bein
 
 - **GitHub**: https://github.com/adetayookunoye/medlingua
 - **Demo Video**: [Video URL]
-- **Model Weights**: [HuggingFace URL]
+- **Model Weights**: https://huggingface.co/adeto/medlingua-gemma4-lora
 - **Benchmark Results**: See `training/output/benchmark_results.json`
