@@ -1,4 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Microphone for voice input (speech-to-text) -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
@@ -13,7 +14,8 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32"/>
+        android:maxSdkVersion="32"
+        tools:replace="android:maxSdkVersion"/>
 
     <!-- Camera hardware feature (optional — app works without it) -->
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
@@ -51,11 +53,11 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- OpenCL libraries for MediaPipe GPU acceleration -->
+        <uses-native-library android:name="libOpenCL.so" android:required="false"/>
+        <uses-native-library android:name="libOpenCL-car.so" android:required="false"/>
+        <uses-native-library android:name="libOpenCL-pixel.so" android:required="false"/>
     </application>
-    <!-- OpenCL libraries for MediaPipe GPU acceleration -->
-    <uses-native-library android:name="libOpenCL.so" android:required="false"/>
-    <uses-native-library android:name="libOpenCL-car.so" android:required="false"/>
-    <uses-native-library android:name="libOpenCL-pixel.so" android:required="false"/>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
          https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.

@@ -7,8 +7,8 @@ plugins {
 
 android {
     namespace = "com.medlingua.medlingua"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    compileSdk = 36
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -39,4 +39,8 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    implementation("androidx.concurrent:concurrent-futures:1.2.0")
 }
