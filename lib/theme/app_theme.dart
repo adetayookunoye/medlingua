@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../models/triage_encounter.dart';
 
 class AppTheme {
   // MedLingua Brand Colors
@@ -19,6 +20,50 @@ class AppTheme {
   static const Color triageUrgent = Color(0xFFF97316);
   static const Color triageStandard = Color(0xFFEAB308);
   static const Color triageRoutine = Color(0xFF22C55E);
+
+  // Spacing scale (consistent 4pt grid)
+  static const double spacingXs = 4;
+  static const double spacingSm = 8;
+  static const double spacingMd = 12;
+  static const double spacingLg = 16;
+  static const double spacingXl = 20;
+  static const double spacingXxl = 24;
+  static const double spacingSection = 32;
+
+  // Border radius scale
+  static const double radiusSm = 6;
+  static const double radiusMd = 8;
+  static const double radiusLg = 12;
+  static const double radiusXl = 16;
+  static const double radiusFull = 20;
+
+  /// Map triage severity to its display color.
+  static Color severityColor(TriageSeverity severity) {
+    switch (severity) {
+      case TriageSeverity.emergency:
+        return triageEmergency;
+      case TriageSeverity.urgent:
+        return triageUrgent;
+      case TriageSeverity.standard:
+        return triageStandard;
+      case TriageSeverity.routine:
+        return triageRoutine;
+    }
+  }
+
+  /// Map triage severity to its display icon.
+  static IconData severityIcon(TriageSeverity severity) {
+    switch (severity) {
+      case TriageSeverity.emergency:
+        return Icons.warning;
+      case TriageSeverity.urgent:
+        return Icons.schedule;
+      case TriageSeverity.standard:
+        return Icons.info_outline;
+      case TriageSeverity.routine:
+        return Icons.check_circle_outline;
+    }
+  }
 
   static ThemeData get lightTheme {
     return ThemeData(
@@ -46,14 +91,8 @@ class AppTheme {
           fontWeight: FontWeight.w600,
           color: textDark,
         ),
-        bodyLarge: GoogleFonts.inter(
-          fontSize: 16,
-          color: textDark,
-        ),
-        bodyMedium: GoogleFonts.inter(
-          fontSize: 14,
-          color: textMuted,
-        ),
+        bodyLarge: GoogleFonts.inter(fontSize: 16, color: textDark),
+        bodyMedium: GoogleFonts.inter(fontSize: 14, color: textMuted),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -69,11 +108,9 @@ class AppTheme {
           ),
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         color: bgWhite,
       ),
       appBarTheme: AppBarTheme(

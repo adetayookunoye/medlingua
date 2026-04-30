@@ -18,6 +18,7 @@ class _TriageScreenState extends State<TriageScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _ageController = TextEditingController();
+  final _weightController = TextEditingController();
   final _symptomsController = TextEditingController();
   String? _selectedGender;
   String? _imagePath;
@@ -29,6 +30,7 @@ class _TriageScreenState extends State<TriageScreen> {
   void dispose() {
     _nameController.dispose();
     _ageController.dispose();
+    _weightController.dispose();
     _symptomsController.dispose();
     super.dispose();
   }
@@ -43,8 +45,7 @@ class _TriageScreenState extends State<TriageScreen> {
             actions: [
               Container(
                 margin: const EdgeInsets.only(right: 12),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
@@ -67,9 +68,10 @@ class _TriageScreenState extends State<TriageScreen> {
               ),
             ],
           ),
-          body: provider.isProcessing
-              ? _buildProcessingView()
-              : _buildTriageForm(context, provider),
+          body:
+              provider.isProcessing
+                  ? _buildProcessingView()
+                  : _buildTriageForm(context, provider),
         );
       },
     );
@@ -103,20 +105,33 @@ class _TriageScreenState extends State<TriageScreen> {
           const SizedBox(height: 8),
           Text(
             'Processing on-device • No data leaves your phone',
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey[500],
-            ),
+            style: TextStyle(fontSize: 13, color: Colors.grey[500]),
           ),
           const SizedBox(height: 32),
           // Animated steps
           _processingStep(Icons.text_fields, 'Analyzing symptoms...', true),
           if (_imagePath != null)
-            _processingStep(Icons.image_search, 'Analyzing image (vision model)...', true),
+            _processingStep(
+              Icons.image_search,
+              'Analyzing image (vision model)...',
+              true,
+            ),
           if (_audioPath != null)
-            _processingStep(Icons.graphic_eq, 'Classifying audio (respiratory sounds)...', true),
-          _processingStep(Icons.medical_services, 'Applying WHO IMCI protocols...', true),
-          _processingStep(Icons.assessment, 'Generating triage assessment...', false),
+            _processingStep(
+              Icons.graphic_eq,
+              'Classifying audio (respiratory sounds)...',
+              true,
+            ),
+          _processingStep(
+            Icons.medical_services,
+            'Applying WHO IMCI protocols...',
+            true,
+          ),
+          _processingStep(
+            Icons.assessment,
+            'Generating triage assessment...',
+            false,
+          ),
         ],
       ),
     );
@@ -165,13 +180,20 @@ class _TriageScreenState extends State<TriageScreen> {
               ),
               child: const Row(
                 children: [
-                  Icon(Icons.info_outline, color: AppTheme.primaryGreen, size: 20),
+                  Icon(
+                    Icons.info_outline,
+                    color: AppTheme.primaryGreen,
+                    size: 20,
+                  ),
                   SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       'This tool supports clinical decision-making. '
                       'Always use professional medical judgment.',
-                      style: TextStyle(fontSize: 12, color: AppTheme.primaryDark),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppTheme.primaryDark,
+                      ),
                     ),
                   ),
                 ],
@@ -180,8 +202,10 @@ class _TriageScreenState extends State<TriageScreen> {
             const SizedBox(height: 20),
 
             // Patient Info Section
-            Text('Patient Information',
-                style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              'Patient Information',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: 12),
 
             TextFormField(
@@ -193,8 +217,11 @@ class _TriageScreenState extends State<TriageScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              validator: (value) =>
-                  value?.isEmpty ?? true ? 'Please enter patient name' : null,
+              validator:
+                  (value) =>
+                      value?.isEmpty ?? true
+                          ? 'Please enter patient name'
+                          : null,
             ),
             const SizedBox(height: 12),
 
@@ -216,7 +243,7 @@ class _TriageScreenState extends State<TriageScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value: _selectedGender,
+                    initialValue: _selectedGender,
                     decoration: InputDecoration(
                       labelText: 'Gender',
                       prefixIcon: const Icon(Icons.wc_outlined),
@@ -229,11 +256,27 @@ class _TriageScreenState extends State<TriageScreen> {
                       DropdownMenuItem(value: 'Female', child: Text('Female')),
                       DropdownMenuItem(value: 'Other', child: Text('Other')),
                     ],
-                    onChanged: (value) =>
-                        setState(() => _selectedGender = value),
+                    onChanged:
+                        (value) => setState(() => _selectedGender = value),
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 12),
+
+            TextFormField(
+              controller: _weightController,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: InputDecoration(
+                labelText: 'Weight (kg)',
+                prefixIcon: const Icon(Icons.monitor_weight_outlined),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                helperText: 'Used for medication dose calculation',
+              ),
             ),
             const SizedBox(height: 24),
 
@@ -274,9 +317,10 @@ class _TriageScreenState extends State<TriageScreen> {
                     onPressed: () => _handleVoiceInput(provider),
                     icon: Icon(
                       provider.isListening ? Icons.mic : Icons.mic_none,
-                      color: provider.isListening
-                          ? AppTheme.dangerRed
-                          : AppTheme.primaryGreen,
+                      color:
+                          provider.isListening
+                              ? AppTheme.dangerRed
+                              : AppTheme.primaryGreen,
                     ),
                     label: Text(
                       provider.isListening
@@ -286,9 +330,10 @@ class _TriageScreenState extends State<TriageScreen> {
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       side: BorderSide(
-                        color: provider.isListening
-                            ? AppTheme.dangerRed
-                            : AppTheme.primaryGreen,
+                        color:
+                            provider.isListening
+                                ? AppTheme.dangerRed
+                                : AppTheme.primaryGreen,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -311,7 +356,11 @@ class _TriageScreenState extends State<TriageScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.record_voice_over, size: 16, color: Colors.blue),
+                    const Icon(
+                      Icons.record_voice_over,
+                      size: 16,
+                      color: Colors.blue,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -333,8 +382,10 @@ class _TriageScreenState extends State<TriageScreen> {
             const SizedBox(height: 24),
 
             // Photo Section
-            Text('Photo (Optional)',
-                style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              'Photo (Optional)',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: 8),
             const Text(
               'Take a photo of wound, rash, or skin condition for visual analysis',
@@ -384,8 +435,11 @@ class _TriageScreenState extends State<TriageScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.check_circle,
-                        color: AppTheme.safeGreen, size: 18),
+                    const Icon(
+                      Icons.check_circle,
+                      color: AppTheme.safeGreen,
+                      size: 18,
+                    ),
                     const SizedBox(width: 8),
                     const Expanded(
                       child: Text(
@@ -396,6 +450,7 @@ class _TriageScreenState extends State<TriageScreen> {
                     IconButton(
                       icon: const Icon(Icons.close, size: 18),
                       onPressed: () => setState(() => _imagePath = null),
+                      tooltip: 'Remove photo',
                     ),
                   ],
                 ),
@@ -405,8 +460,10 @@ class _TriageScreenState extends State<TriageScreen> {
             const SizedBox(height: 24),
 
             // Audio Recording Section
-            Text('Audio Recording (Optional)',
-                style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              'Audio Recording (Optional)',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: 8),
             const Text(
               'Record cough, breathing, or respiratory sounds for AI analysis',
@@ -421,9 +478,10 @@ class _TriageScreenState extends State<TriageScreen> {
                     onPressed: () => _toggleAudioRecording(),
                     icon: Icon(
                       _isRecordingAudio ? Icons.stop_circle : Icons.mic,
-                      color: _isRecordingAudio
-                          ? AppTheme.dangerRed
-                          : AppTheme.primaryGreen,
+                      color:
+                          _isRecordingAudio
+                              ? AppTheme.dangerRed
+                              : AppTheme.primaryGreen,
                     ),
                     label: Text(
                       _isRecordingAudio
@@ -433,9 +491,10 @@ class _TriageScreenState extends State<TriageScreen> {
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       side: BorderSide(
-                        color: _isRecordingAudio
-                            ? AppTheme.dangerRed
-                            : AppTheme.primaryGreen,
+                        color:
+                            _isRecordingAudio
+                                ? AppTheme.dangerRed
+                                : AppTheme.primaryGreen,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -456,18 +515,25 @@ class _TriageScreenState extends State<TriageScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.graphic_eq,
-                        color: Colors.purple, size: 18),
+                    const Icon(
+                      Icons.graphic_eq,
+                      color: Colors.purple,
+                      size: 18,
+                    ),
                     const SizedBox(width: 8),
                     const Expanded(
                       child: Text(
                         'Audio recording attached — will be analyzed for cough/wheeze patterns',
-                        style: TextStyle(color: AppTheme.primaryDark, fontSize: 13),
+                        style: TextStyle(
+                          color: AppTheme.primaryDark,
+                          fontSize: 13,
+                        ),
                       ),
                     ),
                     IconButton(
                       icon: const Icon(Icons.close, size: 18),
                       onPressed: () => setState(() => _audioPath = null),
+                      tooltip: 'Remove audio recording',
                     ),
                   ],
                 ),
@@ -481,9 +547,10 @@ class _TriageScreenState extends State<TriageScreen> {
               width: double.infinity,
               height: 52,
               child: ElevatedButton.icon(
-                onPressed: provider.isModelLoaded
-                    ? () => _submitTriage(provider)
-                    : null,
+                onPressed:
+                    provider.isModelLoaded
+                        ? () => _submitTriage(provider)
+                        : null,
                 icon: const Icon(Icons.medical_services),
                 label: const Text('Run Triage Assessment'),
               ),
@@ -527,9 +594,9 @@ class _TriageScreenState extends State<TriageScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not access camera: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Could not access camera: $e')));
       }
     }
   }
@@ -542,24 +609,39 @@ class _TriageScreenState extends State<TriageScreen> {
       });
       // Audio path was already set when recording started
     } else {
-      // Start recording — use the voice service's underlying platform
-      // For now, create a placeholder indicating the feature is ready
+      // Start recording — placeholder for a proper audio recorder plugin
       try {
         final dir = await getApplicationDocumentsDirectory();
-        final audioFile = File('${dir.path}/triage_audio_${DateTime.now().millisecondsSinceEpoch}.wav');
+        final audioFile = File(
+          '${dir.path}/triage_audio_${DateTime.now().millisecondsSinceEpoch}.wav',
+        );
         setState(() {
           _isRecordingAudio = true;
           _audioPath = audioFile.path;
         });
 
-        // Simulate a recording duration, then auto-stop
-        // In production, this would use a proper audio recorder plugin
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Demo: Simulating 5-second respiratory sound capture',
+              ),
+              backgroundColor: AppTheme.warningYellow,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+
+        // Auto-stop after simulated capture
+        // In production, replace with `record` or `flutter_sound` plugin
         Future.delayed(const Duration(seconds: 5), () {
           if (mounted && _isRecordingAudio) {
             setState(() => _isRecordingAudio = false);
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Audio recording complete (5 seconds)'),
+                content: Text(
+                  'Demo recording complete — ready for classification',
+                ),
                 backgroundColor: AppTheme.primaryGreen,
               ),
             );
@@ -579,18 +661,20 @@ class _TriageScreenState extends State<TriageScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final age = int.tryParse(_ageController.text);
+    final weight = double.tryParse(_weightController.text);
 
     dynamic encounter;
 
     if (_audioPath != null && File(_audioPath!).existsSync()) {
-      // Audio-based triage (with optional image and text)
       encounter = await provider.processAudioTriage(
         patientName: _nameController.text,
         audioPath: _audioPath!,
-        additionalSymptoms: _symptomsController.text.isNotEmpty
-            ? _symptomsController.text
-            : null,
+        additionalSymptoms:
+            _symptomsController.text.isNotEmpty
+                ? _symptomsController.text
+                : null,
         patientAge: age,
+        patientWeight: weight,
         patientGender: _selectedGender,
       );
     } else if (_imagePath != null) {
@@ -599,6 +683,7 @@ class _TriageScreenState extends State<TriageScreen> {
         imagePath: _imagePath!,
         additionalSymptoms: _symptomsController.text,
         patientAge: age,
+        patientWeight: weight,
         patientGender: _selectedGender,
       );
     } else {
@@ -606,6 +691,7 @@ class _TriageScreenState extends State<TriageScreen> {
         patientName: _nameController.text,
         symptoms: _symptomsController.text,
         patientAge: age,
+        patientWeight: weight,
         patientGender: _selectedGender,
       );
     }
@@ -614,12 +700,18 @@ class _TriageScreenState extends State<TriageScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ResultScreen(encounter: encounter),
+          builder:
+              (context) => ResultScreen(
+                encounter: encounter,
+                doseResults: provider.lastDoseResults,
+                interactionAlerts: provider.lastInteractionAlerts,
+              ),
         ),
       );
       // Clear form
       _nameController.clear();
       _ageController.clear();
+      _weightController.clear();
       _symptomsController.clear();
       setState(() {
         _selectedGender = null;

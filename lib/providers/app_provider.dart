@@ -7,6 +7,8 @@ import '../services/voice_service.dart';
 import '../services/vision_service.dart';
 import '../services/audio_classification_service.dart';
 import '../services/model_manager.dart';
+import '../services/sync_service.dart';
+import '../services/dose_check_service.dart';
 import 'package:uuid/uuid.dart';
 
 /// Central state management for the MedLingua app
@@ -14,6 +16,11 @@ class AppProvider extends ChangeNotifier {
   final GemmaService _gemmaService = GemmaService();
   final DatabaseService _dbService = DatabaseService();
   final VoiceService _voiceService = VoiceService();
+  final SyncService _syncService = SyncService();
+
+  // Transient results from last triage (not persisted in DB)
+  List<DoseResult> _lastDoseResults = [];
+  List<InteractionAlert> _lastInteractionAlerts = [];
 
   // State
   AppLanguage _currentLanguage = SupportedLanguages.all.first;
@@ -46,8 +53,13 @@ class AppProvider extends ChangeNotifier {
   String get voiceInput => _voiceInput;
   GemmaService get gemmaService => _gemmaService;
   VoiceService get voiceService => _voiceService;
+  SyncService get syncService => _syncService;
+  DoseCheckService get doseCheckService => _gemmaService.doseCheckService;
+  List<DoseResult> get lastDoseResults => _lastDoseResults;
+  List<InteractionAlert> get lastInteractionAlerts => _lastInteractionAlerts;
   VisionService get visionService => _gemmaService.visionService;
-  AudioClassificationService get audioClassService => _gemmaService.audioService;
+  AudioClassificationService get audioClassService =>
+      _gemmaService.audioService;
 
   /// Initialize app: load model + fetch stored encounters
   Future<void> initialize() async {
@@ -134,6 +146,7 @@ class AppProvider extends ChangeNotifier {
     required String patientName,
     required String symptoms,
     int? patientAge,
+    double? patientWeight,
     String? patientGender,
   }) async {
     _isProcessing = true;
@@ -152,6 +165,7 @@ class AppProvider extends ChangeNotifier {
         timestamp: DateTime.now(),
         patientName: patientName,
         patientAge: patientAge,
+        patientWeight: patientWeight,
         patientGender: patientGender,
         symptoms: symptoms,
         inputLanguage: _currentLanguage.code,
@@ -162,7 +176,11 @@ class AppProvider extends ChangeNotifier {
         isOffline: true,
       );
 
+      _lastDoseResults = response.doseResults;
+      _lastInteractionAlerts = response.interactionAlerts;
+
       await _dbService.saveEncounter(encounter);
+      await _syncService.queueForSync(encounter);
       _currentEncounter = encounter;
       await refreshEncounters();
       await refreshStats();
@@ -180,6 +198,7 @@ class AppProvider extends ChangeNotifier {
     required String imagePath,
     String? additionalSymptoms,
     int? patientAge,
+    double? patientWeight,
     String? patientGender,
   }) async {
     _isProcessing = true;
@@ -199,6 +218,7 @@ class AppProvider extends ChangeNotifier {
         timestamp: DateTime.now(),
         patientName: patientName,
         patientAge: patientAge,
+        patientWeight: patientWeight,
         patientGender: patientGender,
         symptoms: additionalSymptoms ?? 'Image-based assessment',
         imagePath: imagePath,
@@ -210,7 +230,11 @@ class AppProvider extends ChangeNotifier {
         isOffline: true,
       );
 
+      _lastDoseResults = response.doseResults;
+      _lastInteractionAlerts = response.interactionAlerts;
+
       await _dbService.saveEncounter(encounter);
+      await _syncService.queueForSync(encounter);
       _currentEncounter = encounter;
       await refreshEncounters();
       await refreshStats();
@@ -228,6 +252,7 @@ class AppProvider extends ChangeNotifier {
     required String audioPath,
     String? additionalSymptoms,
     int? patientAge,
+    double? patientWeight,
     String? patientGender,
   }) async {
     _isProcessing = true;
@@ -247,6 +272,7 @@ class AppProvider extends ChangeNotifier {
         timestamp: DateTime.now(),
         patientName: patientName,
         patientAge: patientAge,
+        patientWeight: patientWeight,
         patientGender: patientGender,
         symptoms: additionalSymptoms ?? 'Audio-based assessment',
         inputLanguage: _currentLanguage.code,
@@ -257,7 +283,11 @@ class AppProvider extends ChangeNotifier {
         isOffline: true,
       );
 
+      _lastDoseResults = response.doseResults;
+      _lastInteractionAlerts = response.interactionAlerts;
+
       await _dbService.saveEncounter(encounter);
+      await _syncService.queueForSync(encounter);
       _currentEncounter = encounter;
       await refreshEncounters();
       await refreshStats();

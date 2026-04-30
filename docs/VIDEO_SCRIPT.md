@@ -1,129 +1,119 @@
-# MedLingua — 3-Minute Video Script
+# MedLingua — 3-Minute Video Script (v2 — Competition Ready)
 
 > **Target**: 3 minutes | **Judging Weight**: 30% of score
-> **Tone**: Urgent but hopeful — this is about saving children's lives
-> **Format**: Screen recording + voiceover + b-roll suggestions
+> **Tone**: Intimate then urgent then hopeful — story first, system second
+> **Positioning**: The only medical brain a rural health worker needs — no internet, no doctor, no problem.
+> **Format**: Screen recording + voiceover. Write and rehearse for the footage you HAVE, not footage you hope to find.
 
 ---
 
-## [0:00 – 0:25] THE PROBLEM (Hook)
+## [0:00 – 0:20] THE HOOK (One person, one moment)
 
-**[VISUAL: Map of sub-Saharan Africa, statistics fading in]**
+**[VISUAL: Screen recording — MedLingua home screen, quiet and still. Hold 2 seconds.]**
 
-> "Every year, over five million children under age five die from preventable causes. Most of these deaths happen in rural communities across sub-Saharan Africa and South Asia — places where a Community Health Worker is often the only link to healthcare."
+> "Her name is Amina. She's a community health worker in rural northern Nigeria. The nearest hospital is four hours away by motorcycle. This morning, a mother arrived carrying a three-year-old who hasn't eaten in two days and is breathing too fast."
 
-**[VISUAL: Stock photo/video of CHW in village setting with phone]**
+**[VISUAL: Slowly type into the triage screen as you narrate — make it feel real, not rushed]**
 
-> "These health workers make life-or-death triage decisions every day, but they face three critical barriers: limited medical training, no internet connectivity, and language gaps between clinical protocols and the communities they serve."
+> "Amina has no doctor to call. No internet signal. And the WHO protocol manual on her shelf is written in English she can barely read."
 
-**[VISUAL: Quick montage — no signal bars, WHO manual in English, confused patient interaction]**
+**[VISUAL: Pause on the empty symptom field — one beat of silence]**
 
-> "We built MedLingua to solve all three."
-
----
-
-## [0:25 – 0:50] THE SOLUTION (Overview)
-
-**[VISUAL: MedLingua app icon → splash screen → home screen]**
-
-> "MedLingua is a mobile app that puts an AI-powered medical triage assistant directly on a health worker's phone. It runs completely offline, speaks twelve languages including Hausa, Yoruba, Swahili, and Pidgin, and follows the WHO's evidence-based IMCI protocols."
-
-**[VISUAL: Quick highlight — language selector showing all 12 languages]**
-
-> "Powered by Google's Gemma 4 E4B model running on-device through MediaPipe LiteRT, MedLingua turns a phone into a clinical decision support tool that works anywhere — no internet, no cloud, no cost."
+> "This is the moment MedLingua was built for."
 
 ---
 
-## [0:50 – 1:50] LIVE DEMO (Core of the video)
+## [0:20 – 0:40] THE ANSWER (One sentence positioning)
 
-### Text Triage [0:50 – 1:10]
+**[VISUAL: Triage screen fills with symptoms — 'Child 3 years, high fever 3 days, fast breathing, refusing to drink']**
 
-**[VISUAL: Screen recording of the app]**
+> "MedLingua puts the knowledge of a trained clinician on a single Android phone — offline, in twelve languages, following WHO IMCI protocols. Powered by Google's Gemma 4 running entirely on-device. No cloud. No subscription. No signal required."
 
-> "Let me show you how it works. A health worker opens the triage screen, enters the patient's name and age..."
+**[VISUAL: Language selector — scroll through Hausa, Yoruba, Swahili, Pidgin, others]**
 
-**[TYPE: "Child 3 years, high fever for 3 days, fast breathing, refuses to drink"]**
-
-> "...types in the symptoms they're observing, and taps Assess."
-
-**[VISUAL: Loading animation → Result screen with EMERGENCY severity badge]**
-
-> "Gemma 4 instantly classifies this as an Emergency — possible pneumonia — and provides specific recommendations: start antibiotics, give ORS, and refer to the nearest hospital immediately. All following WHO IMCI protocols."
-
-### Voice Input [1:10 – 1:25]
-
-**[VISUAL: Tap microphone icon, speak symptoms]**
-
-> "For health workers who can't type easily, MedLingua supports voice input. Tap the microphone, describe symptoms in any supported language..."
-
-**[VISUAL: Switch language to Hausa (or Swahili), dictate symptoms]**
-
-> "...and the app transcribes and processes everything in that language. The assessment comes back in the same language the worker speaks."
-
-### Multimodal — Image [1:25 – 1:40]
-
-**[VISUAL: Tap camera icon, capture/select a wound photo]**
-
-> "MedLingua is multimodal. Health workers can photograph a wound or skin condition, and Gemma 4's vision capability analyzes the image alongside the text symptoms for a more accurate assessment."
-
-### History & Dashboard [1:40 – 1:50]
-
-**[VISUAL: Navigate to History tab, then Dashboard]**
-
-> "Every encounter is saved locally. The dashboard shows triage statistics — how many emergencies this week, most common conditions — giving health organizations visibility into community health patterns."
+> "Unlike other mHealth tools that require a connection or work only in English, MedLingua works anywhere — even here."
 
 ---
 
-## [1:50 – 2:25] TECHNICAL DEPTH (How Gemma 4 is used)
+## [0:40 – 1:55] LIVE DEMO (One patient's full journey)
 
-**[VISUAL: Architecture diagram from README]**
+**[VISUAL: App is already open on triage screen — symptoms typed in. Tap 'Assess'.]**
 
-> "Under the hood, MedLingua uses Gemma 4 E4B — eight billion parameters with four-point-five billion effective through selective activation. The model runs entirely on-device as a three-point-six-five gigabyte LiteRT file."
+> "Amina taps Assess."
 
-**[VISUAL: Code snippet showing system prompt / function calling setup]**
+**[VISUAL: Loading spinner → Result screen. EMERGENCY badge appears. Hold 2 seconds — let the judge read it.]**
 
-> "We use Gemma 4's native function calling to get structured JSON responses — severity level, diagnosis, recommendations, danger signs, and confidence score. This structured output is critical for medical applications where free-text responses aren't reliable enough."
+> "Emergency. Possible pneumonia. Gemma 4 classified this in seconds, with zero network calls."
 
-**[VISUAL: Fine-tuning pipeline diagram or notebook screenshot]**
+**[VISUAL: Scroll down slowly — REFER IMMEDIATELY card, then Dose card]**
 
-> "We fine-tuned Gemma 4 using Unsloth with four-bit QLoRA on a combination of WHO IMCI protocol data, medical QA datasets, and multilingual medical translations across all twelve languages. Training ran on A100 GPUs at the University of Georgia's Sapelo2 HPC cluster."
+> "The referral card is unambiguous: refer immediately, arrange transport. And then — something most triage tools never do — MedLingua calculates the exact amoxicillin dose for a three-year-old's weight, route, and duration. Right from an on-device WHO Essential Medicines formulary."
 
-**[VISUAL: Benchmark results table/chart]**
+**[VISUAL: Drug interaction card appears below]**
 
-> "Our benchmarks show sixty-one percent severity classification accuracy and seventy-eight percent JSON compliance across eighteen test cases in five languages — and critically, one hundred percent accuracy on emergency cases, meaning no life-threatening condition is ever missed."
+> "If a second drug is involved, MedLingua screens for dangerous interactions automatically. Everything on the phone. Nothing leaves the device."
 
----
+**[VISUAL: Scroll to the transparency disclaimer at the bottom of the result]**
 
-## [2:25 – 2:55] IMPACT & VISION
+> "Critically, MedLingua tells Amina what it did NOT check — no blood tests, no imaging, no full history. She knows exactly where the AI ends and her judgment begins. That transparency is intentional. This is a tool, not a replacement."
 
-**[VISUAL: Map showing target regions highlighted — West Africa, East Africa, South Asia]**
+**[VISUAL: Tap microphone icon — speak 'Zazzabi mai zafi, numfashi da sauri' (Hausa for 'high fever, fast breathing')]**
 
-> "MedLingua directly addresses UN Sustainable Development Goal 3 — Good Health and Well-Being. A single phone loaded with this app can serve an entire village's primary triage needs."
+> "For health workers who can't read easily, voice input works in any supported language. The assessment comes back in the same language Amina speaks."
 
-> "The twelve languages we support cover the highest-need regions: Hausa and Yoruba for Nigeria's 200 million people, Swahili for East Africa, Hindi and Bengali for South Asia, and French for Central and West Africa."
+**[VISUAL: Navigate to History → Supervisor tab. Scroll through charts.]**
 
-**[VISUAL: Side-by-side — before (CHW with paper manual) vs after (CHW with MedLingua)]**
-
-> "We envision a future where no child dies because a health worker didn't have the knowledge or tools to recognize an emergency. MedLingua puts that knowledge in their pocket, in their language, available anytime."
+> "Every encounter is saved locally. The Supervisor Dashboard spots patterns — three emergency cases in twenty-four hours triggers an outbreak alert. When internet arrives, one tap exports an anonymised sync package. Patient names stripped. Only aggregated data leaves the device."
 
 ---
 
-## [2:55 – 3:00] CLOSE
+## [1:55 – 2:15] TECHNICAL CREDIBILITY (One breath, then move on)
 
-**[VISUAL: MedLingua logo + tagline]**
+**[VISUAL: Architecture diagram from README — hold briefly, don't dwell]**
 
-> "MedLingua — offline multilingual medical triage, powered by Gemma 4. Saving lives, one assessment at a time."
+> "Under the hood: Gemma 4 E4B, fine-tuned with four-bit QLoRA on WHO IMCI protocols and multilingual medical data across all twelve languages. Training on A100 GPUs via the University of Georgia's Sapelo2 HPC cluster. The model runs as a 3.65 GB LiteRT file — fully on-device, using Gemma 4's native function calling for structured triage output, dose calculations, and drug safety screening."
 
-**[VISUAL: GitHub URL, model weights URL, demo link]**
+**[VISUAL: Benchmark results table — severity accuracy, emergency accuracy]**
+
+> "In our WHO IMCI benchmark — eighteen clinically grounded test cases — Gemma 4 caught every emergency case. Zero misses. That's the number that matters most."
 
 ---
 
-## Production Notes
+## [2:15 – 2:45] IMPACT (Three levels, real stakes)
 
-- **Screen recording tool**: Use Android screen recorder or scrcpy for high-quality capture
-- **Voiceover**: Record in a quiet room, use a lapel mic, speak slowly and clearly
-- **B-roll**: Stock footage of CHWs available from WHO, UNICEF media libraries (Creative Commons)
-- **Music**: Subtle, hopeful background track — keep volume low so narration is clear
-- **Resolution**: Record at 1080p minimum, 16:9 aspect ratio
-- **Timing tip**: The demo section (0:50-1:50) should feel brisk — practice the app interactions beforehand so there's no fumbling
-- **Benchmark numbers**: Severity accuracy 61.1%, JSON compliance 77.8%, 100% emergency accuracy
+**[VISUAL: Result screen from the demo — the EMERGENCY card still visible]**
+
+> "What did MedLingua just do? At the personal level: Amina has the right dose, the right referral, and the confidence to act. At the clinic level: her supervisor can see this case in the dashboard, track trends, and reallocate resources. At the public health level: if this is the third pneumonia case this week, the sync package flags it — before it becomes an outbreak."
+
+**[VISUAL: Show the app in use — scrolling through history, tapping through screens]**
+
+> "No other offline triage tool on the market does all three. Most do one. MedLingua connects the health worker, the clinic, and the health system — with a single phone, no infrastructure, in any language."
+
+**[VISUAL: App home screen — clean, stable, ready]**
+
+> "That child in Amina's clinic this morning — MedLingua gives her a fighting chance."
+
+---
+
+## [2:45 – 3:00] CLOSE (What winning means)
+
+**[VISUAL: MedLingua logo — clean, full screen. Hold.]**
+
+> "MedLingua is open-source, deployable today, and built to scale. We're seeking partners to pilot with community health worker networks in West Africa and South Asia — starting with fifty workers, one phone each. The model weights are public. The code is public. The only thing missing is reach."
+
+**[VISUAL: GitHub URL, HuggingFace weights URL, contact/demo link — fade in one at a time]**
+
+> "MedLingua. Gemma 4. Offline. Multilingual. For Amina — and the million health workers like her."
+
+---
+
+## Production Notes (Realistic)
+
+- **Footage you have**: App screen recording is your primary asset — make it clean and rehearsed. Record the full patient journey in one take without fumbling; practice 10 times beforehand.
+- **Voiceover**: Record in a quiet room with a lapel or USB condenser mic. Speak slower than feels natural — judges are reading AND listening.
+- **Silence is power**: Use 1–2-second pauses after key moments (the EMERGENCY badge appearing, the dose card appearing). Let judges absorb impact before you explain it.
+- **Music**: Subtle, single-instrument piano or ambient bed. Keep at −20dB under voice. Fade out entirely during the demo.
+- **No stock footage needed**: If you don't have authentic CHW b-roll already sourced, don't use placeholder stock images — a clean screen recording with purposeful narration is stronger than jarring generic photos.
+- **Resolution**: 1080p minimum, 16:9. Export as MP4 H.264.
+- **Benchmark framing**: Always say "18 clinically grounded test cases" — do not claim universal accuracy. Say "caught every emergency — zero misses" rather than "100% accuracy on all cases."
+- **Runtime check**: With pauses, this script runs ~2:55. Read aloud with a stopwatch before recording.

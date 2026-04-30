@@ -14,6 +14,13 @@ subprojects {
 }
 subprojects {
     project.evaluationDependsOn(":app")
+    // Fix camera_android_camerax missing concurrent-futures at compile time
+    project.configurations.whenObjectAdded {
+        if (name.contains("compileClasspath", ignoreCase = true) ||
+            name.contains("runtimeClasspath", ignoreCase = true)) {
+            project.dependencies.add(name, "androidx.concurrent:concurrent-futures:1.2.0")
+        }
+    }
 }
 
 tasks.register<Delete>("clean") {

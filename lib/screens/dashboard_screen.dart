@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
-import '../models/triage_encounter.dart';
+import '../models/language.dart';
+import '../widgets/severity_badge.dart';
 import '../theme/app_theme.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -141,10 +142,7 @@ class DashboardScreen extends StatelessWidget {
                       ),
                       Text(
                         'AI-Powered Medical Triage',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                        ),
+                        style: TextStyle(color: Colors.white70, fontSize: 14),
                       ),
                     ],
                   ),
@@ -169,9 +167,10 @@ class DashboardScreen extends StatelessWidget {
     return Card(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: isLoaded
-              ? AppTheme.safeGreen.withValues(alpha: 0.1)
-              : AppTheme.warningYellow.withValues(alpha: 0.1),
+          backgroundColor:
+              isLoaded
+                  ? AppTheme.safeGreen.withValues(alpha: 0.1)
+                  : AppTheme.warningYellow.withValues(alpha: 0.1),
           child: Icon(
             isLoaded ? Icons.check_circle : Icons.hourglass_top,
             color: isLoaded ? AppTheme.safeGreen : AppTheme.warningYellow,
@@ -185,26 +184,32 @@ class DashboardScreen extends StatelessWidget {
           isLoaded
               ? 'On-device inference active • Medical fine-tune loaded'
               : isLoading
-                  ? 'Initializing Gemma 4 on-device...'
-                  : 'Model not loaded',
+              ? 'Initializing Gemma 4 on-device...'
+              : 'Model not loaded',
         ),
-        trailing: isLoading
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : Icon(
-                isLoaded ? Icons.wifi_off : Icons.error_outline,
-                color: isLoaded ? AppTheme.textMuted : AppTheme.dangerRed,
-                size: 20,
-              ),
+        trailing:
+            isLoading
+                ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+                : Icon(
+                  isLoaded ? Icons.wifi_off : Icons.error_outline,
+                  color: isLoaded ? AppTheme.textMuted : AppTheme.dangerRed,
+                  size: 20,
+                ),
       ),
     );
   }
 
   Widget _buildStatsGrid(
-      int total, int emergency, int urgent, int standard, int routine) {
+    int total,
+    int emergency,
+    int urgent,
+    int standard,
+    int routine,
+  ) {
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
@@ -213,13 +218,30 @@ class DashboardScreen extends StatelessWidget {
       crossAxisSpacing: 12,
       childAspectRatio: 1.6,
       children: [
-        _statCard('Total', total.toString(), Icons.people, AppTheme.primaryGreen),
-        _statCard('Emergency', emergency.toString(), Icons.warning,
-            AppTheme.triageEmergency),
         _statCard(
-            'Urgent', urgent.toString(), Icons.schedule, AppTheme.triageUrgent),
-        _statCard('Routine', (standard + routine).toString(),
-            Icons.check_circle_outline, AppTheme.triageRoutine),
+          'Total',
+          total.toString(),
+          Icons.people,
+          AppTheme.primaryGreen,
+        ),
+        _statCard(
+          'Emergency',
+          emergency.toString(),
+          Icons.warning,
+          AppTheme.triageEmergency,
+        ),
+        _statCard(
+          'Urgent',
+          urgent.toString(),
+          Icons.schedule,
+          AppTheme.triageUrgent,
+        ),
+        _statCard(
+          'Routine',
+          (standard + routine).toString(),
+          Icons.check_circle_outline,
+          AppTheme.triageRoutine,
+        ),
       ],
     );
   }
@@ -236,8 +258,10 @@ class DashboardScreen extends StatelessWidget {
               children: [
                 Icon(icon, color: color, size: 20),
                 const SizedBox(width: 6),
-                Text(label,
-                    style: TextStyle(color: color, fontWeight: FontWeight.w500)),
+                Text(
+                  label,
+                  style: TextStyle(color: color, fontWeight: FontWeight.w500),
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -265,8 +289,11 @@ class DashboardScreen extends StatelessWidget {
           child: Center(
             child: Column(
               children: [
-                Icon(Icons.medical_information_outlined,
-                    size: 48, color: Colors.grey[300]),
+                Icon(
+                  Icons.medical_information_outlined,
+                  size: 48,
+                  color: Colors.grey[300],
+                ),
                 const SizedBox(height: 12),
                 Text(
                   'No triage encounters yet',
@@ -285,71 +312,34 @@ class DashboardScreen extends StatelessWidget {
     }
 
     return Column(
-      children: encounters.map((e) {
-        final severityColor = _getSeverityColor(e.severity);
-        return Card(
-          margin: const EdgeInsets.only(bottom: 8),
-          child: ListTile(
-            leading: CircleAvatar(
-              backgroundColor: severityColor.withValues(alpha: 0.1),
-              child: Icon(
-                _getSeverityIcon(e.severity),
-                color: severityColor,
-                size: 20,
-              ),
-            ),
-            title: Text(e.patientName,
-                style: const TextStyle(fontWeight: FontWeight.w600)),
-            subtitle: Text(
-              e.diagnosis,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: severityColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                e.severity.label,
-                style: TextStyle(
-                  color: severityColor,
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
+      children:
+          encounters.map((e) {
+            final color = AppTheme.severityColor(e.severity);
+            return Card(
+              margin: const EdgeInsets.only(bottom: 8),
+              child: ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: color.withValues(alpha: 0.1),
+                  child: Icon(
+                    AppTheme.severityIcon(e.severity),
+                    color: color,
+                    size: 20,
+                  ),
                 ),
+                title: Text(
+                  e.patientName,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(
+                  e.diagnosis,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                trailing: SeverityBadge(severity: e.severity),
               ),
-            ),
-          ),
-        );
-      }).toList(),
+            );
+          }).toList(),
     );
-  }
-
-  Color _getSeverityColor(severity) {
-    switch (severity.toString().split('.').last) {
-      case 'emergency':
-        return AppTheme.triageEmergency;
-      case 'urgent':
-        return AppTheme.triageUrgent;
-      case 'standard':
-        return AppTheme.triageStandard;
-      default:
-        return AppTheme.triageRoutine;
-    }
-  }
-
-  IconData _getSeverityIcon(severity) {
-    switch (severity.toString().split('.').last) {
-      case 'emergency':
-        return Icons.warning;
-      case 'urgent':
-        return Icons.schedule;
-      case 'standard':
-        return Icons.info_outline;
-      default:
-        return Icons.check_circle_outline;
-    }
   }
 
   void _showLanguagePicker(BuildContext context, AppProvider provider) {
@@ -375,13 +365,45 @@ class DashboardScreen extends StatelessWidget {
                 style: TextStyle(color: Colors.grey, fontSize: 13),
               ),
               const SizedBox(height: 16),
-              ...provider.currentLanguage.code == provider.currentLanguage.code
-                  ? []
-                  : [],
               Expanded(
                 child: ListView(
                   children:
-                      _buildLanguageList(context, provider),
+                      SupportedLanguages.all.map((lang) {
+                        final isSelected =
+                            provider.currentLanguage.code == lang.code;
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor:
+                                isSelected
+                                    ? AppTheme.primaryGreen
+                                    : Colors.grey[100],
+                            child: Text(
+                              lang.code.toUpperCase(),
+                              style: TextStyle(
+                                color:
+                                    isSelected
+                                        ? Colors.white
+                                        : Colors.grey[600],
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                          title: Text(lang.nativeName),
+                          subtitle: Text(lang.name),
+                          trailing:
+                              isSelected
+                                  ? const Icon(
+                                    Icons.check,
+                                    color: AppTheme.primaryGreen,
+                                  )
+                                  : null,
+                          onTap: () {
+                            provider.setLanguage(lang);
+                            Navigator.pop(context);
+                          },
+                        );
+                      }).toList(),
                 ),
               ),
             ],
@@ -390,56 +412,4 @@ class DashboardScreen extends StatelessWidget {
       },
     );
   }
-
-  List<Widget> _buildLanguageList(BuildContext context, AppProvider provider) {
-    return _getLanguages().map((lang) {
-      final isSelected = provider.currentLanguage.code == lang.code;
-      return ListTile(
-        leading: CircleAvatar(
-          backgroundColor: isSelected
-              ? AppTheme.primaryGreen
-              : Colors.grey[100],
-          child: Text(
-            lang.code.toUpperCase(),
-            style: TextStyle(
-              color: isSelected ? Colors.white : Colors.grey[600],
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
-            ),
-          ),
-        ),
-        title: Text(lang.nativeName),
-        subtitle: Text(lang.name),
-        trailing: isSelected
-            ? const Icon(Icons.check, color: AppTheme.primaryGreen)
-            : null,
-        onTap: () {
-          provider.setLanguage(lang);
-          Navigator.pop(context);
-        },
-      );
-    }).toList();
-  }
-
-  List<dynamic> _getLanguages() {
-    return const [
-      _LangItem(code: 'en', name: 'English', nativeName: 'English'),
-      _LangItem(code: 'sw', name: 'Swahili', nativeName: 'Kiswahili'),
-      _LangItem(code: 'yo', name: 'Yoruba', nativeName: 'Yorùbá'),
-      _LangItem(code: 'ha', name: 'Hausa', nativeName: 'Hausa'),
-      _LangItem(code: 'hi', name: 'Hindi', nativeName: 'हिन्दी'),
-      _LangItem(code: 'bn', name: 'Bengali', nativeName: 'বাংলা'),
-      _LangItem(code: 'fr', name: 'French', nativeName: 'Français'),
-      _LangItem(code: 'pt', name: 'Portuguese', nativeName: 'Português'),
-      _LangItem(code: 'es', name: 'Spanish', nativeName: 'Español'),
-      _LangItem(code: 'ar', name: 'Arabic', nativeName: 'العربية'),
-    ];
-  }
-}
-
-class _LangItem {
-  final String code;
-  final String name;
-  final String nativeName;
-  const _LangItem({required this.code, required this.name, required this.nativeName});
 }

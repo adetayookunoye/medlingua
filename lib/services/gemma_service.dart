@@ -6,6 +6,7 @@ import 'package:flutter_mediapipe_chat/flutter_mediapipe_chat.dart';
 import 'model_manager.dart';
 import 'vision_service.dart';
 import 'audio_classification_service.dart';
+import 'dose_check_service.dart';
 
 /// Service for on-device Gemma 4 inference via MediaPipe LLM Inference API
 ///
@@ -19,6 +20,7 @@ class GemmaService {
   final ModelManager _modelManager = ModelManager.instance;
   final VisionService _visionService = VisionService();
   final AudioClassificationService _audioService = AudioClassificationService();
+  final DoseCheckService _doseCheckService = DoseCheckService();
 
   bool _isModelLoaded = false;
   bool _isProcessing = false;
@@ -38,6 +40,9 @@ class GemmaService {
 
   /// Expose audio classification service.
   AudioClassificationService get audioService => _audioService;
+
+  /// Expose dose check service.
+  DoseCheckService get doseCheckService => _doseCheckService;
 
   /// Check whether any supported model file exists on-device.
   Future<bool> isModelDownloaded() async {
@@ -59,7 +64,9 @@ class GemmaService {
       final found = await _modelManager.autoDetect();
 
       if (!found) {
-        debugPrint('GemmaService.loadModel: No model found — entering demo mode');
+        debugPrint(
+          'GemmaService.loadModel: No model found — entering demo mode',
+        );
         useDemoMode = true;
         _isModelLoaded = true;
         return;
@@ -68,7 +75,9 @@ class GemmaService {
       final path = await _modelManager.modelPath;
 
       if (!File(path).existsSync()) {
-        debugPrint('GemmaService.loadModel: Model file missing at $path — entering demo mode');
+        debugPrint(
+          'GemmaService.loadModel: Model file missing at $path — entering demo mode',
+        );
         useDemoMode = true;
         _isModelLoaded = true;
         return;
@@ -86,7 +95,9 @@ class GemmaService {
 
       useDemoMode = false;
       _isModelLoaded = true;
-      debugPrint('GemmaService.loadModel: Loaded ${_modelManager.activeModel.displayName} from $path');
+      debugPrint(
+        'GemmaService.loadModel: Loaded ${_modelManager.activeModel.displayName} from $path',
+      );
     } catch (e, stackTrace) {
       debugPrint('GemmaService.loadModel: Error: $e\n$stackTrace');
       // Fall back to demo mode so the app remains functional
@@ -112,7 +123,9 @@ class GemmaService {
         patientGender: patientGender,
       );
 
-      debugPrint('GemmaService.processTextTriage: Prompt length: ${prompt.length} chars');
+      debugPrint(
+        'GemmaService.processTextTriage: Prompt length: ${prompt.length} chars',
+      );
 
       if (useDemoMode) {
         await Future.delayed(const Duration(seconds: 2));
@@ -121,11 +134,15 @@ class GemmaService {
 
       final responseText = await _chat.generateResponse(prompt);
       if (responseText == null || responseText.isEmpty) {
-        debugPrint('GemmaService.processTextTriage: Empty response — falling back to demo');
+        debugPrint(
+          'GemmaService.processTextTriage: Empty response — falling back to demo',
+        );
         return _generateDemoResponse(symptoms, language);
       }
 
-      debugPrint('GemmaService.processTextTriage: Raw response length: ${responseText.length}');
+      debugPrint(
+        'GemmaService.processTextTriage: Raw response length: ${responseText.length}',
+      );
       return _parseTriageResponse(responseText);
     } catch (e, stackTrace) {
       debugPrint('GemmaService.processTextTriage: Error: $e\n$stackTrace');
@@ -153,9 +170,13 @@ class GemmaService {
       VisionResult? visionResult;
       try {
         visionResult = await _visionService.analyzeImage(imagePath);
-        debugPrint('GemmaService.processImageTriage: Vision result: $visionResult');
+        debugPrint(
+          'GemmaService.processImageTriage: Vision result: $visionResult',
+        );
       } catch (e) {
-        debugPrint('GemmaService.processImageTriage: Vision analysis failed: $e');
+        debugPrint(
+          'GemmaService.processImageTriage: Vision analysis failed: $e',
+        );
       }
 
       if (useDemoMode) {
@@ -174,15 +195,21 @@ class GemmaService {
         visionTriageHint: visionResult?.triageHint,
       );
 
-      debugPrint('GemmaService.processImageTriage: Prompt length: ${prompt.length} chars');
+      debugPrint(
+        'GemmaService.processImageTriage: Prompt length: ${prompt.length} chars',
+      );
 
       final responseText = await _chat.generateResponse(prompt);
       if (responseText == null || responseText.isEmpty) {
-        debugPrint('GemmaService.processImageTriage: Empty response — falling back to demo');
+        debugPrint(
+          'GemmaService.processImageTriage: Empty response — falling back to demo',
+        );
         return _generateDemoImageResponse(language, visionResult: visionResult);
       }
 
-      debugPrint('GemmaService.processImageTriage: Raw response length: ${responseText.length}');
+      debugPrint(
+        'GemmaService.processImageTriage: Raw response length: ${responseText.length}',
+      );
       return _parseTriageResponse(responseText);
     } catch (e, stackTrace) {
       debugPrint('GemmaService.processImageTriage: Error: $e\n$stackTrace');
@@ -210,9 +237,13 @@ class GemmaService {
       AudioClassResult? audioResult;
       try {
         audioResult = await _audioService.classifyAudio(audioPath);
-        debugPrint('GemmaService.processAudioTriage: Audio result: $audioResult');
+        debugPrint(
+          'GemmaService.processAudioTriage: Audio result: $audioResult',
+        );
       } catch (e) {
-        debugPrint('GemmaService.processAudioTriage: Audio classification failed: $e');
+        debugPrint(
+          'GemmaService.processAudioTriage: Audio classification failed: $e',
+        );
       }
 
       if (useDemoMode) {
@@ -221,14 +252,16 @@ class GemmaService {
       }
 
       // Step 2: Build prompt with audio findings
-      final audioContext = audioResult != null
-          ? 'Audio analysis: ${audioResult.findings}\n'
-            'Detected sound: ${audioResult.category} '
-            '(confidence: ${(audioResult.confidence * 100).toStringAsFixed(0)}%)\n'
-            'Clinical hint: ${audioResult.triageHint}'
-          : 'Audio analysis: Not available';
+      final audioContext =
+          audioResult != null
+              ? 'Audio analysis: ${audioResult.findings}\n'
+                  'Detected sound: ${audioResult.category} '
+                  '(confidence: ${(audioResult.confidence * 100).toStringAsFixed(0)}%)\n'
+                  'Clinical hint: ${audioResult.triageHint}'
+              : 'Audio analysis: Not available';
 
-      final symptomText = additionalSymptoms ?? 'No additional symptoms reported';
+      final symptomText =
+          additionalSymptoms ?? 'No additional symptoms reported';
       final prompt = '''
 <system>
 You are MedLingua, a medical triage assistant for Community Health Workers.
@@ -294,11 +327,13 @@ Assess the severity based on audio findings and symptoms. Provide triage guidanc
   }) {
     return '''
 <system>
-You are MedLingua, a medical triage assistant for Community Health Workers.
+You are MedLingua, a clinical workflow AI for Community Health Workers.
 Follow WHO IMCI (Integrated Management of Childhood Illness) protocols.
 Respond in $language language.
 
 You MUST use the classify_triage function to provide structured output.
+If you recommend any medications, also call dose_check for each drug.
+If the patient is taking multiple medications, call interaction_check.
 
 IMPORTANT: You are a triage SUPPORT tool, not a doctor. Always recommend 
 professional medical consultation for serious conditions.
@@ -315,6 +350,22 @@ professional medical consultation for serious conditions.
     "danger_signs": ["list of danger signs to watch for"],
     "confidence": 0.0-1.0
   }
+},
+{
+  "name": "dose_check",
+  "description": "Calculate weight-based dose for a medication per WHO guidelines",
+  "parameters": {
+    "drug_name": "Name of the medication",
+    "weight_kg": "Patient weight in kg (estimate from age if unknown)",
+    "age_months": "Patient age in months"
+  }
+},
+{
+  "name": "interaction_check",
+  "description": "Check for dangerous drug interactions between prescribed medications",
+  "parameters": {
+    "drug_names": ["list of medication names to check for interactions"]
+  }
 }]
 </tools>
 
@@ -328,7 +379,7 @@ Assess the severity and provide triage guidance.
 ''';
   }
 
-  /// Build prompt for image-based triage with multi-modal fusion.
+  /// Build the image-based triage prompt
   String _buildImageTriagePrompt({
     String? additionalSymptoms,
     required String language,
@@ -339,12 +390,13 @@ Assess the severity and provide triage guidance.
     String? visionTriageHint,
   }) {
     final symptomText = additionalSymptoms ?? 'No additional symptoms reported';
-    final visionContext = visionFindings != null
-        ? 'Image analysis results:\n'
-          '- Category: $visionCategory\n'
-          '- Findings: $visionFindings\n'
-          '- Clinical hint: $visionTriageHint'
-        : 'Image analysis: Not available — assess based on symptoms alone';
+    final visionContext =
+        visionFindings != null
+            ? 'Image analysis results:\n'
+                '- Category: $visionCategory\n'
+                '- Findings: $visionFindings\n'
+                '- Clinical hint: $visionTriageHint'
+            : 'Image analysis: Not available — assess based on symptoms alone';
 
     return '''
 <system>
@@ -390,6 +442,9 @@ Analyze the visual findings and assess the severity. Provide triage guidance.
   // ---------------------------------------------------------------------------
 
   /// Parse the model's function-call response into a TriageResponse.
+  ///
+  /// Also detects dose_check and interaction_check tool calls in the response
+  /// and executes them locally via [DoseCheckService].
   TriageResponse _parseTriageResponse(String rawResponse) {
     try {
       // Try to extract JSON from the response (model may wrap it in markdown)
@@ -398,39 +453,128 @@ Analyze the visual findings and assess the severity. Provide triage guidance.
         dotAll: true,
       ).firstMatch(rawResponse);
 
+      TriageResponse base;
       if (jsonMatch != null) {
         final json = jsonDecode(jsonMatch.group(0)!) as Map<String, dynamic>;
-        return TriageResponse(
-          severity: _normalizeSeverity(json['severity'] as String? ?? 'routine'),
+        base = TriageResponse(
+          severity: _normalizeSeverity(
+            json['severity'] as String? ?? 'routine',
+          ),
           diagnosis: json['diagnosis'] as String? ?? 'Assessment pending',
-          recommendation: json['recommendation'] as String? ?? 'Seek professional evaluation',
-          dangerSigns: (json['danger_signs'] as List<dynamic>?)
+          recommendation:
+              json['recommendation'] as String? ??
+              'Seek professional evaluation',
+          dangerSigns:
+              (json['danger_signs'] as List<dynamic>?)
                   ?.map((e) => e.toString())
                   .toList() ??
               ['Seek immediate help if condition worsens'],
           confidence: (json['confidence'] as num?)?.toDouble() ?? 0.5,
         );
+      } else {
+        // Fallback: try to parse the whole response as JSON
+        final json = jsonDecode(rawResponse) as Map<String, dynamic>;
+        final params = json['parameters'] as Map<String, dynamic>? ?? json;
+        base = TriageResponse(
+          severity: _normalizeSeverity(
+            params['severity'] as String? ?? 'routine',
+          ),
+          diagnosis: params['diagnosis'] as String? ?? 'Assessment pending',
+          recommendation:
+              params['recommendation'] as String? ??
+              'Seek professional evaluation',
+          dangerSigns:
+              (params['danger_signs'] as List<dynamic>?)
+                  ?.map((e) => e.toString())
+                  .toList() ??
+              ['Seek immediate help if condition worsens'],
+          confidence: (params['confidence'] as num?)?.toDouble() ?? 0.5,
+        );
       }
 
-      // Fallback: try to parse the whole response as JSON
-      final json = jsonDecode(rawResponse) as Map<String, dynamic>;
-      // Check if it's wrapped in a function call
-      final params = json['parameters'] as Map<String, dynamic>? ?? json;
-      return TriageResponse(
-        severity: _normalizeSeverity(params['severity'] as String? ?? 'routine'),
-        diagnosis: params['diagnosis'] as String? ?? 'Assessment pending',
-        recommendation: params['recommendation'] as String? ?? 'Seek professional evaluation',
-        dangerSigns: (params['danger_signs'] as List<dynamic>?)
-                ?.map((e) => e.toString())
-                .toList() ??
-            ['Seek immediate help if condition worsens'],
-        confidence: (params['confidence'] as num?)?.toDouble() ?? 0.5,
-      );
+      // Execute any tool calls the model made
+      final toolResults = _executeToolCalls(rawResponse);
+      if (toolResults.doseResults.isNotEmpty ||
+          toolResults.interactionAlerts.isNotEmpty) {
+        return TriageResponse(
+          severity: base.severity,
+          diagnosis: base.diagnosis,
+          recommendation: base.recommendation,
+          dangerSigns: base.dangerSigns,
+          confidence: base.confidence,
+          doseResults: toolResults.doseResults,
+          interactionAlerts: toolResults.interactionAlerts,
+        );
+      }
+
+      return base;
     } catch (e) {
       debugPrint('GemmaService._parseTriageResponse: Parse failed: $e');
-      // If parsing fails, extract what we can from free text
       return _extractFromFreeText(rawResponse);
     }
+  }
+
+  /// Scan raw LLM output for dose_check / interaction_check tool calls
+  /// and execute them against the local formulary.
+  _ToolCallResults _executeToolCalls(String rawResponse) {
+    final doseResults = <DoseResult>[];
+    final interactionAlerts = <InteractionAlert>[];
+
+    try {
+      // Look for dose_check calls
+      final dosePattern = RegExp(r'dose_check[^{]*(\{[^}]+\})', dotAll: true);
+      for (final match in dosePattern.allMatches(rawResponse)) {
+        try {
+          final json = jsonDecode(match.group(1)!) as Map<String, dynamic>;
+          final drugName = json['drug_name'] as String?;
+          final weightKg = (json['weight_kg'] as num?)?.toDouble();
+          final ageMonths = (json['age_months'] as num?)?.toInt();
+
+          if (drugName != null && weightKg != null) {
+            final result = _doseCheckService.calculateDose(
+              drugName: drugName,
+              weightKg: weightKg,
+              ageMonths: ageMonths,
+            );
+            if (result != null) {
+              doseResults.add(result);
+            }
+          }
+        } catch (e) {
+          debugPrint('GemmaService._executeToolCalls: dose_check parse: $e');
+        }
+      }
+
+      // Look for interaction_check calls
+      final interactionPattern = RegExp(
+        r'interaction_check[^{]*(\{[^}]+\})',
+        dotAll: true,
+      );
+      for (final match in interactionPattern.allMatches(rawResponse)) {
+        try {
+          final json = jsonDecode(match.group(1)!) as Map<String, dynamic>;
+          final drugNames =
+              (json['drug_names'] as List<dynamic>?)
+                  ?.map((e) => e.toString())
+                  .toList();
+          if (drugNames != null && drugNames.length >= 2) {
+            final alerts = _doseCheckService.checkInteractions(drugNames);
+            interactionAlerts.addAll(alerts);
+          }
+        } catch (e) {
+          debugPrint(
+            'GemmaService._executeToolCalls: interaction_check parse: $e',
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('GemmaService._executeToolCalls: $e');
+    }
+
+    return _ToolCallResults(
+      doseResults: doseResults,
+      interactionAlerts: interactionAlerts,
+    );
   }
 
   /// Normalize severity strings the model might return.
@@ -447,18 +591,23 @@ Analyze the visual findings and assess the severity. Provide triage guidance.
   TriageResponse _extractFromFreeText(String text) {
     final lower = text.toLowerCase();
     String severity = 'standard';
-    if (lower.contains('emergency') || lower.contains('critical') || lower.contains('danger')) {
+    if (lower.contains('emergency') ||
+        lower.contains('critical') ||
+        lower.contains('danger')) {
       severity = 'emergency';
     } else if (lower.contains('urgent') || lower.contains('serious')) {
       severity = 'urgent';
-    } else if (lower.contains('routine') || lower.contains('mild') || lower.contains('minor')) {
+    } else if (lower.contains('routine') ||
+        lower.contains('mild') ||
+        lower.contains('minor')) {
       severity = 'routine';
     }
 
     return TriageResponse(
       severity: severity,
       diagnosis: text.length > 200 ? '${text.substring(0, 200)}...' : text,
-      recommendation: 'Please review the full AI response above. '
+      recommendation:
+          'Please review the full AI response above. '
           'Seek professional medical consultation for accurate diagnosis.',
       dangerSigns: [
         'Unable to eat or drink',
@@ -481,7 +630,8 @@ Analyze the visual findings and assess the severity. Provide triage guidance.
     if (lowerSymptoms.contains('fever') && lowerSymptoms.contains('rash')) {
       return TriageResponse(
         severity: 'urgent',
-        diagnosis: 'Possible measles or viral exanthem — fever with rash requires evaluation',
+        diagnosis:
+            'Possible measles or viral exanthem — fever with rash requires evaluation',
         recommendation:
             '1. Check for Koplik spots (white spots inside cheeks)\n'
             '2. Monitor temperature every 2 hours\n'
@@ -496,7 +646,8 @@ Analyze the visual findings and assess the severity. Provide triage guidance.
         ],
         confidence: 0.82,
       );
-    } else if (lowerSymptoms.contains('diarr') || lowerSymptoms.contains('vomit')) {
+    } else if (lowerSymptoms.contains('diarr') ||
+        lowerSymptoms.contains('vomit')) {
       return TriageResponse(
         severity: 'urgent',
         diagnosis: 'Acute gastroenteritis with risk of dehydration',
@@ -514,7 +665,8 @@ Analyze the visual findings and assess the severity. Provide triage guidance.
         ],
         confidence: 0.88,
       );
-    } else if (lowerSymptoms.contains('cough') || lowerSymptoms.contains('breath')) {
+    } else if (lowerSymptoms.contains('cough') ||
+        lowerSymptoms.contains('breath')) {
       return TriageResponse(
         severity: 'standard',
         diagnosis: 'Acute respiratory infection',
@@ -535,7 +687,8 @@ Analyze the visual findings and assess the severity. Provide triage guidance.
     } else {
       return TriageResponse(
         severity: 'routine',
-        diagnosis: 'Initial symptom assessment — further evaluation recommended',
+        diagnosis:
+            'Initial symptom assessment — further evaluation recommended',
         recommendation:
             '1. Record all symptoms in detail\n'
             '2. Take vital signs if equipment available\n'
@@ -554,7 +707,10 @@ Analyze the visual findings and assess the severity. Provide triage guidance.
   }
 
   /// Demo response for image-based triage
-  TriageResponse _generateDemoImageResponse(String language, {VisionResult? visionResult}) {
+  TriageResponse _generateDemoImageResponse(
+    String language, {
+    VisionResult? visionResult,
+  }) {
     if (visionResult != null && visionResult.category != 'unknown') {
       // Use vision findings to generate a more specific demo response
       final severity = _visionCategoryToSeverity(visionResult.category);
@@ -579,7 +735,8 @@ Analyze the visual findings and assess the severity. Provide triage guidance.
 
     return TriageResponse(
       severity: 'standard',
-      diagnosis: 'Skin lesion detected — requires clinical evaluation for proper identification',
+      diagnosis:
+          'Skin lesion detected — requires clinical evaluation for proper identification',
       recommendation:
           '1. Clean the area with clean water and mild soap\n'
           '2. Do not apply traditional remedies\n'
@@ -597,7 +754,10 @@ Analyze the visual findings and assess the severity. Provide triage guidance.
   }
 
   /// Demo response for audio-based triage
-  TriageResponse _generateDemoAudioResponse(String language, {AudioClassResult? audioResult}) {
+  TriageResponse _generateDemoAudioResponse(
+    String language, {
+    AudioClassResult? audioResult,
+  }) {
     if (audioResult != null && audioResult.category != 'unknown') {
       final severity = _audioCategoryToSeverity(audioResult.category);
       return TriageResponse(
@@ -684,6 +844,16 @@ Analyze the visual findings and assess the severity. Provide triage guidance.
   }
 }
 
+/// Internal result of executing tool calls found in LLM output.
+class _ToolCallResults {
+  final List<DoseResult> doseResults;
+  final List<InteractionAlert> interactionAlerts;
+  const _ToolCallResults({
+    required this.doseResults,
+    required this.interactionAlerts,
+  });
+}
+
 /// Structured response from the Gemma 4 triage assessment
 class TriageResponse {
   final String severity;
@@ -692,11 +862,19 @@ class TriageResponse {
   final List<String> dangerSigns;
   final double confidence;
 
+  /// Dose calculations (populated when Gemma calls dose_check tool).
+  final List<DoseResult> doseResults;
+
+  /// Drug interaction alerts (populated when Gemma calls interaction_check).
+  final List<InteractionAlert> interactionAlerts;
+
   TriageResponse({
     required this.severity,
     required this.diagnosis,
     required this.recommendation,
     required this.dangerSigns,
     required this.confidence,
+    this.doseResults = const [],
+    this.interactionAlerts = const [],
   });
 }

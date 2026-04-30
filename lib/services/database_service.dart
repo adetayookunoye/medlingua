@@ -27,6 +27,7 @@ class DatabaseService {
               timestamp TEXT NOT NULL,
               patientName TEXT NOT NULL,
               patientAge INTEGER,
+              patientWeight REAL,
               patientGender TEXT,
               symptoms TEXT NOT NULL,
               imagePath TEXT,
@@ -63,7 +64,10 @@ class DatabaseService {
       throw DatabaseServiceException('Failed to save encounter', cause: e);
     } catch (e, stackTrace) {
       debugPrint('DatabaseService.saveEncounter unexpected: $e\n$stackTrace');
-      throw DatabaseServiceException('Unexpected error saving encounter', cause: e);
+      throw DatabaseServiceException(
+        'Unexpected error saving encounter',
+        cause: e,
+      );
     }
   }
 
@@ -71,16 +75,15 @@ class DatabaseService {
   Future<List<TriageEncounter>> getAllEncounters() async {
     try {
       final db = await database;
-      final rows = await db.query(
-        _tableName,
-        orderBy: 'timestamp DESC',
-      );
+      final rows = await db.query(_tableName, orderBy: 'timestamp DESC');
       return rows.map((row) => TriageEncounter.fromMap(row)).toList();
     } on DatabaseException catch (e) {
       debugPrint('DatabaseService.getAllEncounters: $e');
       return [];
     } catch (e, stackTrace) {
-      debugPrint('DatabaseService.getAllEncounters unexpected: $e\n$stackTrace');
+      debugPrint(
+        'DatabaseService.getAllEncounters unexpected: $e\n$stackTrace',
+      );
       return [];
     }
   }
@@ -108,7 +111,8 @@ class DatabaseService {
 
   /// Get encounters by severity.
   Future<List<TriageEncounter>> getEncountersBySeverity(
-      TriageSeverity severity) async {
+    TriageSeverity severity,
+  ) async {
     try {
       final db = await database;
       final rows = await db.query(
@@ -122,14 +126,18 @@ class DatabaseService {
       debugPrint('DatabaseService.getEncountersBySeverity: $e');
       return [];
     } catch (e, stackTrace) {
-      debugPrint('DatabaseService.getEncountersBySeverity unexpected: $e\n$stackTrace');
+      debugPrint(
+        'DatabaseService.getEncountersBySeverity unexpected: $e\n$stackTrace',
+      );
       return [];
     }
   }
 
   /// Get encounters within a date range.
   Future<List<TriageEncounter>> getEncountersByDateRange(
-      DateTime start, DateTime end) async {
+    DateTime start,
+    DateTime end,
+  ) async {
     try {
       final db = await database;
       final rows = await db.query(
@@ -143,7 +151,9 @@ class DatabaseService {
       debugPrint('DatabaseService.getEncountersByDateRange: $e');
       return [];
     } catch (e, stackTrace) {
-      debugPrint('DatabaseService.getEncountersByDateRange unexpected: $e\n$stackTrace');
+      debugPrint(
+        'DatabaseService.getEncountersByDateRange unexpected: $e\n$stackTrace',
+      );
       return [];
     }
   }
@@ -174,10 +184,24 @@ class DatabaseService {
       return stats;
     } on DatabaseException catch (e) {
       debugPrint('DatabaseService.getEncounterStats: $e');
-      return {'total': 0, 'emergency': 0, 'urgent': 0, 'standard': 0, 'routine': 0};
+      return {
+        'total': 0,
+        'emergency': 0,
+        'urgent': 0,
+        'standard': 0,
+        'routine': 0,
+      };
     } catch (e, stackTrace) {
-      debugPrint('DatabaseService.getEncounterStats unexpected: $e\n$stackTrace');
-      return {'total': 0, 'emergency': 0, 'urgent': 0, 'standard': 0, 'routine': 0};
+      debugPrint(
+        'DatabaseService.getEncounterStats unexpected: $e\n$stackTrace',
+      );
+      return {
+        'total': 0,
+        'emergency': 0,
+        'urgent': 0,
+        'standard': 0,
+        'routine': 0,
+      };
     }
   }
 
@@ -185,17 +209,16 @@ class DatabaseService {
   Future<void> deleteEncounter(String id) async {
     try {
       final db = await database;
-      await db.delete(
-        _tableName,
-        where: 'id = ?',
-        whereArgs: [id],
-      );
+      await db.delete(_tableName, where: 'id = ?', whereArgs: [id]);
     } on DatabaseException catch (e) {
       debugPrint('DatabaseService.deleteEncounter: $e');
       throw DatabaseServiceException('Failed to delete encounter', cause: e);
     } catch (e, stackTrace) {
       debugPrint('DatabaseService.deleteEncounter unexpected: $e\n$stackTrace');
-      throw DatabaseServiceException('Unexpected error deleting encounter', cause: e);
+      throw DatabaseServiceException(
+        'Unexpected error deleting encounter',
+        cause: e,
+      );
     }
   }
 
@@ -215,5 +238,6 @@ class DatabaseServiceException implements Exception {
   const DatabaseServiceException(this.message, {this.cause});
 
   @override
-  String toString() => 'DatabaseServiceException: $message${cause != null ? ' ($cause)' : ''}';
+  String toString() =>
+      'DatabaseServiceException: $message${cause != null ? ' ($cause)' : ''}';
 }

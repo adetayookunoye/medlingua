@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
 import '../models/triage_encounter.dart';
+import '../utils/date_utils.dart' as app_dates;
+import 'result_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -25,10 +27,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final now = DateTime.now();
     switch (_dateFilter) {
       case _DateRange.today:
-        filtered = filtered.where((e) =>
-            e.timestamp.year == now.year &&
-            e.timestamp.month == now.month &&
-            e.timestamp.day == now.day).toList();
+        filtered =
+            filtered
+                .where(
+                  (e) =>
+                      e.timestamp.year == now.year &&
+                      e.timestamp.month == now.month &&
+                      e.timestamp.day == now.day,
+                )
+                .toList();
         break;
       case _DateRange.week:
         final weekAgo = now.subtract(const Duration(days: 7));
@@ -36,7 +43,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
         break;
       case _DateRange.month:
         final monthAgo = now.subtract(const Duration(days: 30));
-        filtered = filtered.where((e) => e.timestamp.isAfter(monthAgo)).toList();
+        filtered =
+            filtered.where((e) => e.timestamp.isAfter(monthAgo)).toList();
         break;
       case _DateRange.all:
         break;
@@ -62,7 +70,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 children: [
                   Center(
                     child: Container(
-                      width: 40, height: 4,
+                      width: 40,
+                      height: 4,
                       decoration: BoxDecoration(
                         color: Colors.grey[300],
                         borderRadius: BorderRadius.circular(2),
@@ -73,8 +82,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Filters',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const Text(
+                        'Filters',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       TextButton(
                         onPressed: () {
                           setSheetState(() {
@@ -90,8 +104,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   const SizedBox(height: 12),
 
                   // Severity filter
-                  const Text('Severity', style: TextStyle(
-                    fontWeight: FontWeight.w600, fontSize: 14, color: AppTheme.textMuted)),
+                  const Text(
+                    'Severity',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      color: AppTheme.textMuted,
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
@@ -105,34 +125,47 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           setState(() {});
                         },
                       ),
-                      ...TriageSeverity.values.map((s) => _filterChip(
-                        label: s.label,
-                        selected: _severityFilter == s,
-                        color: _getSeverityColor(s),
-                        onSelected: () {
-                          setSheetState(() => _severityFilter = s);
-                          setState(() {});
-                        },
-                      )),
+                      ...TriageSeverity.values.map(
+                        (s) => _filterChip(
+                          label: s.label,
+                          selected: _severityFilter == s,
+                          color: _getSeverityColor(s),
+                          onSelected: () {
+                            setSheetState(() => _severityFilter = s);
+                            setState(() {});
+                          },
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),
 
                   // Date filter
-                  const Text('Time Range', style: TextStyle(
-                    fontWeight: FontWeight.w600, fontSize: 14, color: AppTheme.textMuted)),
+                  const Text(
+                    'Time Range',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      color: AppTheme.textMuted,
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
-                    children: _DateRange.values.map((d) => _filterChip(
-                      label: d.label,
-                      selected: _dateFilter == d,
-                      color: AppTheme.primaryGreen,
-                      onSelected: () {
-                        setSheetState(() => _dateFilter = d);
-                        setState(() {});
-                      },
-                    )).toList(),
+                    children:
+                        _DateRange.values
+                            .map(
+                              (d) => _filterChip(
+                                label: d.label,
+                                selected: _dateFilter == d,
+                                color: AppTheme.primaryGreen,
+                                onSelected: () {
+                                  setSheetState(() => _dateFilter = d);
+                                  setState(() {});
+                                },
+                              ),
+                            )
+                            .toList(),
                   ),
                   const SizedBox(height: 20),
 
@@ -160,11 +193,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
     required VoidCallback onSelected,
   }) {
     return ChoiceChip(
-      label: Text(label, style: TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        color: selected ? Colors.white : color,
-      )),
+      label: Text(
+        label,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: selected ? Colors.white : color,
+        ),
+      ),
       selected: selected,
       selectedColor: color,
       backgroundColor: color.withValues(alpha: 0.1),
@@ -181,7 +217,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
       builder: (context, provider, child) {
         final allEncounters = provider.encounters;
         final encounters = _applyFilters(allEncounters);
-        final hasActiveFilter = _severityFilter != null || _dateFilter != _DateRange.all;
+        final hasActiveFilter =
+            _severityFilter != null || _dateFilter != _DateRange.all;
 
         return Scaffold(
           appBar: AppBar(
@@ -196,9 +233,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     ),
                     if (hasActiveFilter)
                       Positioned(
-                        right: 8, top: 8,
+                        right: 8,
+                        top: 8,
                         child: Container(
-                          width: 8, height: 8,
+                          width: 8,
+                          height: 8,
                           decoration: const BoxDecoration(
                             color: AppTheme.accentOrange,
                             shape: BoxShape.circle,
@@ -215,37 +254,58 @@ class _HistoryScreenState extends State<HistoryScreen> {
               if (hasActiveFilter)
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   color: AppTheme.primaryGreen.withValues(alpha: 0.05),
                   child: Row(
                     children: [
-                      const Icon(Icons.filter_alt, size: 16, color: AppTheme.primaryGreen),
+                      const Icon(
+                        Icons.filter_alt,
+                        size: 16,
+                        color: AppTheme.primaryGreen,
+                      ),
                       const SizedBox(width: 6),
                       Text(
                         'Showing ${encounters.length} of ${allEncounters.length}',
                         style: const TextStyle(
-                          fontSize: 12, color: AppTheme.textMuted, fontWeight: FontWeight.w500),
+                          fontSize: 12,
+                          color: AppTheme.textMuted,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                       if (_severityFilter != null) ...[
                         const SizedBox(width: 8),
                         Chip(
-                          label: Text(_severityFilter!.label,
-                              style: const TextStyle(fontSize: 10)),
+                          label: Text(
+                            _severityFilter!.label,
+                            style: const TextStyle(fontSize: 10),
+                          ),
                           deleteIcon: const Icon(Icons.close, size: 14),
-                          onDeleted: () => setState(() => _severityFilter = null),
-                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          onDeleted:
+                              () => setState(() => _severityFilter = null),
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
                           visualDensity: VisualDensity.compact,
-                          backgroundColor: _getSeverityColor(_severityFilter!).withValues(alpha: 0.1),
+                          backgroundColor: _getSeverityColor(
+                            _severityFilter!,
+                          ).withValues(alpha: 0.1),
                         ),
                       ],
                       if (_dateFilter != _DateRange.all) ...[
                         const SizedBox(width: 8),
                         Chip(
-                          label: Text(_dateFilter.label,
-                              style: const TextStyle(fontSize: 10)),
+                          label: Text(
+                            _dateFilter.label,
+                            style: const TextStyle(fontSize: 10),
+                          ),
                           deleteIcon: const Icon(Icons.close, size: 14),
-                          onDeleted: () => setState(() => _dateFilter = _DateRange.all),
-                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          onDeleted:
+                              () =>
+                                  setState(() => _dateFilter = _DateRange.all),
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
                           visualDensity: VisualDensity.compact,
                         ),
                       ],
@@ -254,9 +314,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 ),
               // List
               Expanded(
-                child: encounters.isEmpty
-                    ? _buildEmptyState(hasActiveFilter)
-                    : _buildEncounterList(context, encounters),
+                child:
+                    encounters.isEmpty
+                        ? _buildEmptyState(hasActiveFilter)
+                        : _buildEncounterList(context, encounters),
               ),
             ],
           ),
@@ -289,18 +350,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
             hasFilter
                 ? 'Try adjusting your filters'
                 : 'Completed triage assessments will appear here',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[400],
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey[400]),
           ),
           if (hasFilter) ...[
             const SizedBox(height: 16),
             TextButton.icon(
-              onPressed: () => setState(() {
-                _severityFilter = null;
-                _dateFilter = _DateRange.all;
-              }),
+              onPressed:
+                  () => setState(() {
+                    _severityFilter = null;
+                    _dateFilter = _DateRange.all;
+                  }),
               icon: const Icon(Icons.clear_all),
               label: const Text('Clear Filters'),
             ),
@@ -311,13 +370,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget _buildEncounterList(
-      BuildContext context, List<TriageEncounter> encounters) {
+    BuildContext context,
+    List<TriageEncounter> encounters,
+  ) {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: encounters.length,
       itemBuilder: (context, index) {
         final e = encounters[index];
-        final severityColor = _getSeverityColor(e.severity);
+        final severityColor = AppTheme.severityColor(e.severity);
 
         return Card(
           margin: const EdgeInsets.only(bottom: 10),
@@ -357,7 +418,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             ),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 3),
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
                               decoration: BoxDecoration(
                                 color: severityColor.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(6),
@@ -386,19 +449,25 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Icon(Icons.access_time,
-                                size: 12, color: Colors.grey[400]),
+                            Icon(
+                              Icons.access_time,
+                              size: 12,
+                              color: Colors.grey[400],
+                            ),
                             const SizedBox(width: 4),
                             Text(
-                              _formatTime(e.timestamp),
+                              app_dates.formatDateTime(e.timestamp),
                               style: TextStyle(
                                 fontSize: 11,
                                 color: Colors.grey[400],
                               ),
                             ),
                             const SizedBox(width: 12),
-                            Icon(Icons.language,
-                                size: 12, color: Colors.grey[400]),
+                            Icon(
+                              Icons.language,
+                              size: 12,
+                              color: Colors.grey[400],
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               e.inputLanguage.toUpperCase(),
@@ -409,8 +478,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             ),
                             if (e.isOffline) ...[
                               const SizedBox(width: 12),
-                              Icon(Icons.wifi_off,
-                                  size: 12, color: Colors.grey[400]),
+                              Icon(
+                                Icons.wifi_off,
+                                size: 12,
+                                color: Colors.grey[400],
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 'Offline',
@@ -437,121 +509,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   void _showEncounterDetail(BuildContext context, TriageEncounter encounter) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        final severityColor = _getSeverityColor(encounter.severity);
-        return DraggableScrollableSheet(
-          initialChildSize: 0.7,
-          maxChildSize: 0.9,
-          minChildSize: 0.4,
-          expand: false,
-          builder: (context, scrollController) {
-            return SingleChildScrollView(
-              controller: scrollController,
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        backgroundColor: severityColor.withValues(alpha: 0.1),
-                        child: Icon(Icons.person, color: severityColor),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              encounter.patientName,
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              '${encounter.severity.label} • ${_formatTime(encounter.timestamp)}',
-                              style: TextStyle(
-                                color: severityColor,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  _detailSection('Symptoms', encounter.symptoms),
-                  _detailSection('Diagnosis', encounter.diagnosis),
-                  _detailSection('Recommendation', encounter.recommendation),
-                  _detailSection(
-                    'Confidence',
-                    '${(encounter.confidenceScore * 100).toInt()}%',
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ResultScreen(encounter: encounter)),
     );
   }
 
-  Widget _detailSection(String title, String content) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
-              color: AppTheme.textMuted,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(content, style: const TextStyle(fontSize: 15, height: 1.5)),
-        ],
-      ),
-    );
-  }
-
-  Color _getSeverityColor(TriageSeverity severity) {
-    switch (severity) {
-      case TriageSeverity.emergency:
-        return AppTheme.triageEmergency;
-      case TriageSeverity.urgent:
-        return AppTheme.triageUrgent;
-      case TriageSeverity.standard:
-        return AppTheme.triageStandard;
-      case TriageSeverity.routine:
-        return AppTheme.triageRoutine;
-    }
-  }
-
-  String _formatTime(DateTime dt) {
-    return '${dt.day}/${dt.month}/${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-  }
+  Color _getSeverityColor(TriageSeverity severity) =>
+      AppTheme.severityColor(severity);
 }
 
 enum _DateRange {

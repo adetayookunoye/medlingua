@@ -38,6 +38,8 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeIn;
+  bool _minTimeElapsed = false;
+  bool _navigated = false;
 
   @override
   void initState() {
@@ -49,14 +51,29 @@ class _SplashScreenState extends State<SplashScreen>
     _fadeIn = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
     _controller.forward();
 
-    // Navigate to home after model loads (or timeout)
-    Future.delayed(const Duration(seconds: 3), () {
+    // Minimum branding display before navigating
+    Future.delayed(const Duration(milliseconds: 1500), () {
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-        );
+        _minTimeElapsed = true;
+        _tryNavigate();
       }
     });
+
+    // Hard ceiling — navigate after 10s even if model isn't loaded
+    Future.delayed(const Duration(seconds: 10), () {
+      if (mounted) {
+        _minTimeElapsed = true;
+        _tryNavigate();
+      }
+    });
+  }
+
+  void _tryNavigate() {
+    if (!mounted || _navigated || !_minTimeElapsed) return;
+    _navigated = true;
+    Navigator.of(
+      context,
+    ).pushReplacement(MaterialPageRoute(builder: (_) => const HomeScreen()));
   }
 
   @override
@@ -67,6 +84,10 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isLoaded = context.watch<AppProvider>().isModelLoaded;
+    if (isLoaded && _minTimeElapsed) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _tryNavigate());
+    }
     return Scaffold(
       backgroundColor: AppTheme.primaryGreen,
       body: Center(
@@ -129,7 +150,7 @@ class _SplashScreenState extends State<SplashScreen>
               ),
               const SizedBox(height: 16),
               Text(
-                'Loading Gemma 4 model on-device...',
+                isLoaded ? 'Ready!' : 'Loading Gemma 4 model on-device...',
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.6),
                   fontSize: 13,
@@ -141,8 +162,11 @@ class _SplashScreenState extends State<SplashScreen>
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.wifi_off,
-                      size: 14, color: Colors.white.withValues(alpha: 0.4)),
+                  Icon(
+                    Icons.wifi_off,
+                    size: 14,
+                    color: Colors.white.withValues(alpha: 0.4),
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     'Works completely offline • Your data stays private',

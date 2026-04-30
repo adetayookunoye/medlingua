@@ -33,6 +33,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 DATA_DIR = SCRIPT_DIR / "data"
 IMCI_FILE = DATA_DIR / "imci_triage_dataset.jsonl"
 MULTILINGUAL_FILE = DATA_DIR / "imci_multilingual.jsonl"
+ROUTINE_BOOST_FILE = DATA_DIR / "routine_standard_boost.jsonl"
 OUTPUT_FILE = DATA_DIR / "medlingua_train.jsonl"
 
 # The system prompt that matches GemmaService._buildTriagePrompt()
@@ -462,6 +463,25 @@ def main():
         MULTILINGUAL_FILE.unlink()
     multilingual_samples = load_multilingual_dataset()
     all_samples.extend(multilingual_samples)
+
+    # 2b. Load routine/standard boost samples (always)
+    if ROUTINE_BOOST_FILE.exists():
+        boost_samples = []
+        with open(ROUTINE_BOOST_FILE, "r") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                raw = json.loads(line)
+                boost_samples.append(
+                    format_chat_template(
+                        raw["instruction"], raw.get("input", ""), raw["output"]
+                    )
+                )
+        print(f"  Routine/standard boost: {len(boost_samples)} samples")
+        all_samples.extend(boost_samples)
+    else:
+        print(f"  Routine/standard boost: skipped (file not found)")
 
     if not args.imci_only:
         # 3. Load MedMCQA

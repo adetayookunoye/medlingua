@@ -4,6 +4,7 @@ class TriageEncounter {
   final DateTime timestamp;
   final String patientName;
   final int? patientAge;
+  final double? patientWeight; // kg
   final String? patientGender;
   final String symptoms;
   final String? imagePath; // Path to wound/skin photo
@@ -20,6 +21,7 @@ class TriageEncounter {
     required this.timestamp,
     required this.patientName,
     this.patientAge,
+    this.patientWeight,
     this.patientGender,
     required this.symptoms,
     this.imagePath,
@@ -38,6 +40,7 @@ class TriageEncounter {
       'timestamp': timestamp.toIso8601String(),
       'patientName': patientName,
       'patientAge': patientAge,
+      'patientWeight': patientWeight,
       'patientGender': patientGender,
       'symptoms': symptoms,
       'imagePath': imagePath,
@@ -57,6 +60,7 @@ class TriageEncounter {
       timestamp: DateTime.parse(map['timestamp']),
       patientName: map['patientName'],
       patientAge: map['patientAge'],
+      patientWeight: map['patientWeight']?.toDouble(),
       patientGender: map['patientGender'],
       symptoms: map['symptoms'],
       imagePath: map['imagePath'],
@@ -76,9 +80,9 @@ class TriageEncounter {
 
 enum TriageSeverity {
   emergency, // Red - Immediate life threat
-  urgent,    // Orange - Serious, needs attention within hours
-  standard,  // Yellow - Moderate, within 24 hours
-  routine,   // Green - Minor, can wait
+  urgent, // Orange - Serious, needs attention within hours
+  standard, // Yellow - Moderate, within 24 hours
+  routine, // Green - Minor, can wait
 }
 
 extension TriageSeverityExt on TriageSeverity {

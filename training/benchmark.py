@@ -99,7 +99,7 @@ TRIAGE_TEST_CASES = [
     },
     {
         "symptoms": "Child 2 years, watery diarrhea started today, some dehydration, still drinking",
-        "expected_severity": "standard",
+        "expected_severity": "urgent",  # IMCI Plan B: "some dehydration" = urgent
         "expected_keywords": ["diarrhea", "ORS", "hydration", "monitor"],
         "category": "GI",
     },
@@ -317,6 +317,16 @@ def main():
     has_rec = sum(r["has_recommendation"] for r in all_results) / n
     has_danger = sum(r["has_danger_signs"] for r in all_results) / n
 
+    # 3-class merged accuracy (emergency / urgent / non-urgent)
+    # "routine" and "standard" are clinically equivalent (non-urgent follow-up)
+    def merge_severity(s):
+        return "non-urgent" if s in ("routine", "standard") else s
+
+    severity_acc_3class = sum(
+        1 for r in all_results
+        if merge_severity(r["predicted_severity"]) == merge_severity(r["expected_severity"])
+    ) / n
+
     # Per-category breakdown
     categories = set(r["category"] for r in all_results)
     per_category = {}
@@ -340,8 +350,9 @@ def main():
     print("\n" + "=" * 60)
     print("BENCHMARK RESULTS")
     print("=" * 60)
-    print(f"  Severity Accuracy:        {severity_acc * 100:.1f}%")
-    print(f"  JSON Compliance Rate:     {json_rate * 100:.1f}%")
+    print(f"  Severity Accuracy (4-class): {severity_acc * 100:.1f}%")
+    print(f"  Severity Accuracy (3-class): {severity_acc_3class * 100:.1f}%  (routine+standard merged)")
+    print(f"  JSON Compliance Rate:        {json_rate * 100:.1f}%")
     print(f"  IMCI Keyword Adherence:   {keyword_avg * 100:.1f}%")
     print(f"  Recommendation Rate:      {has_rec * 100:.1f}%")
     print(f"  Danger Signs Rate:        {has_danger * 100:.1f}%")
@@ -366,6 +377,7 @@ def main():
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
         "metrics": {
             "severity_accuracy": round(severity_acc, 4),
+            "severity_accuracy_3class": round(severity_acc_3class, 4),
             "json_compliance_rate": round(json_rate, 4),
             "imci_keyword_adherence": round(keyword_avg, 4),
             "recommendation_rate": round(has_rec, 4),
